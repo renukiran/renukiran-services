@@ -5,6 +5,7 @@ import com.renukiran.dto.TrainerAvailabilityRequest;
 import com.renukiran.entity.Users;
 import com.renukiran.service.SignUpService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/trainers")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class SignUpController {
 
     private final SignUpService signUpService;
 
-    @PostMapping()
+    @PostMapping("/trainers")
     public ResponseEntity<String> signup(@Valid @RequestBody SignUpRequest request) {
         Users user = signUpService.signUp(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Signup successful! Your account has been created.");
@@ -31,5 +32,11 @@ public class SignUpController {
     public ResponseEntity<String> setTrainerAvailability(@PathVariable UUID trainerUserId, @Valid @RequestBody TrainerAvailabilityRequest request) {
 
         return ResponseEntity.ok("Trainer availability saved successfully");
+    }
+
+    @GetMapping("/trainers/by-tracking/{trackingNumber}")
+    public ResponseEntity<Users> getTrainer(@NotNull @PathVariable Long trackingNumber ){
+        Users trainer = signUpService.findTrainer(trackingNumber);
+        return ResponseEntity.ok(trainer);
     }
 }

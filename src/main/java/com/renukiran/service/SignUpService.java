@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +36,11 @@ public class SignUpService {
                 .build();
 
         return signUpRepository.save(trainer);
+    }
+
+    public Users findTrainer(Long trackingId){
+        return signUpRepository.findById(trackingId).orElseThrow(() ->
+                new RuntimeException("Trainer not found for tracking number: " +trackingId));
+
     }
 }
