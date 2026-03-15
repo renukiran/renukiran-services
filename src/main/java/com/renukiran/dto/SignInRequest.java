@@ -10,9 +10,8 @@ import jakarta.validation.constraints.Pattern;
 public class SignInRequest {
 
     @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+@gmail\\.com$", message = "Username can only contain letters, numbers, dots, underscores, and hyphens")
-    private String username;
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 50 characters")
+    private String userName;
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
@@ -21,17 +20,17 @@ public class SignInRequest {
     public SignInRequest() {
     }
 
-    public SignInRequest(String username, String password) {
-        this.username = username;
+    public SignInRequest(String userName, String password) {
+        this.userName = userName;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getPassword() {
