@@ -21,7 +21,6 @@ public class AdminSignInController {
 
     @PostMapping("/admin")
     public SignInResponse signIn(@Valid @RequestBody SignInRequest request) {
-        System.out.println("ADMIN LOGIN HIT");
         return adminsignInService.signIn(request);
     }
 
