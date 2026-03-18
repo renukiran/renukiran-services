@@ -1,5 +1,7 @@
 package com.renukiran.dto;
 
+import java.util.List;
+
 /**
  * DTO for trainee sign-in response
  */
@@ -7,16 +9,16 @@ public class SignInResponse {
 
     private boolean success;
     private String message;
-    private String token;
+    private List<String> errors;
     private int statusCode;
 
     public SignInResponse() {
     }
 
-    public SignInResponse(boolean success, String message, String token, int statusCode) {
+    public SignInResponse(boolean success, String message, List<String> errors, int statusCode) {
         this.success = success;
         this.message = message;
-        this.token = token;
+        this.errors = errors;
         this.statusCode = statusCode;
     }
 
@@ -36,12 +38,12 @@ public class SignInResponse {
         this.message = message;
     }
 
-    public String getToken() {
-        return token;
+    public List<String> getErrors() {
+        return errors;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setErrors(List<String> errors) {
+        this.errors = errors;
     }
 
     public int getStatusCode() {

@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
+
 /**
  * Global exception handler for the application
  */
@@ -32,28 +34,26 @@ public class GlobalExceptionHandler {
             .body(response);
     }
 
-    /**
-     * Handle validation exceptions (invalid request body)
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<SignInResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
 
-        StringBuilder errorMessage = new StringBuilder("Validation failed: ");
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-            errorMessage.append(error.getField()).append(" - ").append(error.getDefaultMessage()).append("; ")
-        );
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + " - " + error.getDefaultMessage())
+                .toList();
 
         SignInResponse response = new SignInResponse(
-            false,
-            errorMessage.toString(),
-            null,
-            400
+                false,
+                "Validation failed",
+                errors,   // now sending list instead of single string
+                400
         );
 
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(response);
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     /**
