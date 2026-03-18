@@ -1,6 +1,8 @@
 package com.renukiran.exception;
 
+import com.renukiran.dto.ErrorResponse;
 import com.renukiran.dto.SignInResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -35,43 +37,48 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<SignInResponse> handleValidationException(
+    public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
 
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> error.getField() + " - " + error.getDefaultMessage())
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
 
-        SignInResponse response = new SignInResponse(
-                false,
-                "Validation failed",
-                errors,   // now sending list instead of single string
-                400
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "VALIDATION_FAILED",
+                errors
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     /**
      * Handle generic exceptions
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<SignInResponse> handleGenericException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
 
-        SignInResponse response = new SignInResponse(
-            false,
-            "An error occurred: " + ex.getMessage(),
-            null,
-            500
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL_ERROR",
+                List.of("Something went wrong")
+        );
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> handleAppException(ApplicationException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                ex.getHttpStatus().value(),
+                ex.getErrorCode(),
+               List.of(ex.getMessage())
         );
 
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(response);
+        return new ResponseEntity<>(response, ex.getHttpStatus());
     }
+
 }
 

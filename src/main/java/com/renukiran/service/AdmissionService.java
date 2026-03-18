@@ -6,6 +6,9 @@ import com.renukiran.entity.Admission;
 import com.renukiran.entity.AdmissionSequence;
 import com.renukiran.entity.Candidate;
 import com.renukiran.entity.Course;
+import com.renukiran.exception.BusinessValidationException;
+import com.renukiran.exception.DuplicateResourceException;
+import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.AdmissionRepository;
 import com.renukiran.repository.AdmissionSequenceRepository;
 import com.renukiran.repository.CandidateRepository;
@@ -32,17 +35,17 @@ public class AdmissionService {
 
         // Course validation
         Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         //Same course check
         boolean alreadyEnrolled = admissionRepository.existsByCandidateAndCourse(candidate, course);
 
         if (alreadyEnrolled) {
-            throw new RuntimeException("Candidate already enrolled for this course");
+            throw new DuplicateResourceException("Candidate already enrolled for this course");
         }
         // Same batch + timing check (NEW)
         if (admissionRepository.existsByCandidateAndBatchNoAndTiming(candidate, request.getBatchNo(), request.getTiming())) {
-            throw new RuntimeException("Candidate already has a course in the same batch and timing");
+            throw new BusinessValidationException("Candidate already has a course in the same batch and timing");
         }
 
         // Generate admission number
@@ -59,7 +62,7 @@ public class AdmissionService {
         try {
             admissionRepository.save(admission);
         } catch (DataIntegrityViolationException ex) {
-            throw new RuntimeException("Duplicate admission: course or batch/timing conflict");
+            throw new DuplicateResourceException("Duplicate admission: course or batch/timing conflict");
         }
         return new AdmissionResponse(admissionNumber, "Admission created successfully");
     }
@@ -71,7 +74,7 @@ public class AdmissionService {
                                     existing.getDob().equals(request.getDob());
 
                     if (!match) {
-                        throw new RuntimeException("Mobile already registered with different name/DOB");
+                        throw new BusinessValidationException("Mobile already registered with different name/DOB");
                     }
 
                     // update optional fields
