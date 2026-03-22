@@ -10,7 +10,7 @@ description = 'Services for RenuKiran foundation'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -33,4 +33,13 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+
+tasks.named("jar") {
+	enabled = false
+}
+
+tasks.named("bootJar") {
+	enabled = true
 }
