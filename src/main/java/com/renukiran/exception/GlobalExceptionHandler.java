@@ -2,7 +2,8 @@ package com.renukiran.exception;
 
 import com.renukiran.dto.ErrorResponse;
 import com.renukiran.dto.SignInResponse;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +17,8 @@ import java.util.List;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * Handle authentication exceptions
@@ -61,6 +64,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
 
+
+
+        // Log the exception so it is visible in the console/log files
+        log.error("Unhandled exception caught by GlobalExceptionHandler", ex);
+
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "INTERNAL_ERROR",
@@ -70,6 +78,10 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ErrorResponse> handleAppException(ApplicationException ex) {
+
+
+        // Log application exceptions for debugging
+        log.error("ApplicationException: {} - {}", ex.getErrorCode(), ex.getMessage(), ex);
 
         ErrorResponse response = new ErrorResponse(
                 ex.getHttpStatus().value(),
@@ -81,4 +93,3 @@ public class GlobalExceptionHandler {
     }
 
 }
-

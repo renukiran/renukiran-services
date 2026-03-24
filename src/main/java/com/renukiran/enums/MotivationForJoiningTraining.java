@@ -1,0 +1,12 @@
+package com.renukiran.enums;
+
+public enum MotivationForJoiningTraining {
+
+    WANT_INCOME_IMMEDIATELY,
+    WANT_SUPPORT_FAMILY,
+    WANT_TO_LEARN_MARKET_DEMAND_SKILLS,
+    WANT_HOME_BASED_WORK,
+    WANT_TO_START_MICRO_ENTERPRISE,
+    WANT_TO_JOIN_SHG_AFTER_PROGRAM,
+    OTHER
+}
