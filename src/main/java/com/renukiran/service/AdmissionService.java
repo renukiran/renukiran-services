@@ -35,13 +35,13 @@ public class AdmissionService {
 
         // Course validation
         Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("COURSE_NOT_FOUND","Course not found"));
 
         //Same course check
         boolean alreadyEnrolled = admissionRepository.existsByCandidateAndCourse(candidate, course);
 
         if (alreadyEnrolled) {
-            throw new DuplicateResourceException("Candidate already enrolled for this course");
+            throw new DuplicateResourceException("ALREADY_ENROLLED","Candidate already enrolled for this course");
         }
         // Same batch + timing check (NEW)
         if (admissionRepository.existsByCandidateAndBatchNoAndTiming(candidate, request.getBatchNo(), request.getTiming())) {
@@ -62,7 +62,7 @@ public class AdmissionService {
         try {
             admissionRepository.save(admission);
         } catch (DataIntegrityViolationException ex) {
-            throw new DuplicateResourceException("Duplicate admission: course or batch/timing conflict");
+            throw new DuplicateResourceException("DUPLICATE_ADMISSON","Duplicate admission: course or batch/timing conflict");
         }
         return new AdmissionResponse(admissionNumber, "Admission created successfully");
     }
