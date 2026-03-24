@@ -5,6 +5,7 @@ import com.renukiran.dto.BatchResponse;
 import com.renukiran.entity.Batch;
 import com.renukiran.entity.Course;
 import com.renukiran.entity.Trainer;
+import com.renukiran.exception.BusinessValidationException;
 import com.renukiran.exception.DuplicateResourceException;
 import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.BatchRepository;
@@ -26,6 +27,9 @@ public class BatchService {
     @Transactional
     public BatchResponse create(BatchRequest request) {
 
+        if (request.getStartDate() != null && request.getEndDate() != null && request.getStartDate().isAfter(request.getEndDate())) {
+            throw new BusinessValidationException("startDate must be before endDate");
+        }
         if (batchRepository.existsByBatchName(request.getBatchName())) {
             throw new DuplicateResourceException("Batch already exists with this batch Name:" +request.getBatchName(), "BATCH_ALREADY_EXIST");
         }
