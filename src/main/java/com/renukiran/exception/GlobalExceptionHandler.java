@@ -1,16 +1,20 @@
 package com.renukiran.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.renukiran.dto.ErrorResponse;
 import com.renukiran.dto.SignInResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Global exception handler for the application
@@ -39,6 +43,26 @@ public class GlobalExceptionHandler {
             .body(response);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFormat(HttpMessageNotReadableException ex) {
+
+        String errorMessage = "Invalid request format";
+
+        if (ex.getCause() instanceof InvalidFormatException ife) {
+
+            String fieldName = ife.getPath()
+                    .stream()
+                    .map(ref -> ref.getFieldName())
+                    .collect(Collectors.joining("."));
+
+            if (ife.getTargetType().equals(LocalDate.class)) {
+                errorMessage = fieldName + " must be in format yyyy-MM-dd";
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse( HttpStatus.BAD_REQUEST.value(),"INVALID_FORMAT", List.of(errorMessage)));
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
