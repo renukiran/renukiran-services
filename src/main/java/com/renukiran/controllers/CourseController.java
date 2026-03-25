@@ -19,7 +19,6 @@ public class CourseController {
     // ADMIN ONLY
     @PostMapping("/add")
     public CourseResponse addCourse(@Valid @RequestBody CreateCourseRequest request) {
-        System.out.println("null");
         return courseService.addCourse(request);
     }
 

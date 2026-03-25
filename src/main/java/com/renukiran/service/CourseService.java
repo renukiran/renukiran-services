@@ -22,15 +22,29 @@ public class CourseService {
                 .courseName(request.getCourseName())
                 .instructor(request.getInstructor())
                 .durationMonths(request.getDuration())
+                .maxBatchSize(request.getMaxBatchSize())
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .status(request.getStatus())
+                .mcqAssessment(request.getMcqAssessment())
+                .practicalAssessment(request.getPracticalAssessment())
+                .caseStudyAssessment(request.getCaseStudyAssessment())
                 .build();
 
         Course saved = courseRepository.save(course);
 
         return CourseResponse.builder()
                 .id(saved.getCourseId())
-                .courseName(saved.getCourseName())
-                .instructor(saved.getInstructor())
-                .duration(saved.getDurationMonths())
+                .courseName(request.getCourseName())
+                .instructor(request.getInstructor())
+                .duration(request.getDuration())
+                .maxBatchSize(request.getMaxBatchSize())
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .status(request.getStatus())
+                .mcqAssessment(request.getMcqAssessment())
+                .practicalAssessment(request.getPracticalAssessment())
+                .caseStudyAssessment(request.getCaseStudyAssessment())
                 .build();
     }
 
@@ -42,6 +56,13 @@ public class CourseService {
                         .courseName(c.getCourseName())
                         .instructor(c.getInstructor())
                         .duration(c.getDurationMonths())
+                        .maxBatchSize(c.getMaxBatchSize())
+                        .category(c.getCategory())
+                        .description(c.getDescription())
+                        .status(c.getStatus())
+                        .mcqAssessment(c.getMcqAssessment())
+                        .practicalAssessment(c.getPracticalAssessment())
+                        .caseStudyAssessment(c.getCaseStudyAssessment())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -57,20 +78,38 @@ public class CourseService {
 
     public CourseResponse updateCourse(Long id, CreateCourseRequest request) {
 
+        // 1. Fetch existing course
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
+        // 2. Update all fields from the request DTO to the Entity
         course.setCourseName(request.getCourseName());
         course.setInstructor(request.getInstructor());
         course.setDurationMonths(request.getDuration());
+        course.setMaxBatchSize(request.getMaxBatchSize());
+        course.setCategory(request.getCategory());
+        course.setDescription(request.getDescription());
+        course.setStatus(request.getStatus());
+        course.setMcqAssessment(request.getMcqAssessment());
+        course.setPracticalAssessment(request.getPracticalAssessment());
+        course.setCaseStudyAssessment(request.getCaseStudyAssessment());
 
+        // 3. Persist changes
         Course updated = courseRepository.save(course);
 
+        // 4. Return the updated response
         return CourseResponse.builder()
                 .id(updated.getCourseId())
                 .courseName(updated.getCourseName())
                 .instructor(updated.getInstructor())
-                .duration(updated.getDurationMonths())
+                .duration(updated.getDurationMonths()) // Matches your Entity field
+                .maxBatchSize(updated.getMaxBatchSize())
+                .category(updated.getCategory())
+                .description(updated.getDescription())
+                .status(updated.getStatus())
+                .mcqAssessment(updated.getMcqAssessment())
+                .practicalAssessment(updated.getPracticalAssessment())
+                .caseStudyAssessment(updated.getCaseStudyAssessment())
                 .build();
     }
 }

@@ -28,7 +28,21 @@ public class Course {
 
     private Integer durationMonths;
 
+    private Integer maxBatchSize;
+
     private String instructor;
+
+    private String category;
+
+    private String description;
+
+    private String mcqAssessment;
+
+    private String practicalAssessment;
+
+    private String caseStudyAssessment;
+
+    private String status;
 
     @OneToMany(mappedBy = "course")
     private List<Admission> admissions = new ArrayList<>();
