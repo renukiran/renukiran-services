@@ -1,10 +1,16 @@
 package com.renukiran.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.HashSet;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
 @Table(name = "batches",
@@ -14,6 +20,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Batch {
 
     @Id
@@ -41,6 +48,16 @@ public class Batch {
 
     @Column(nullable = false)
     private Integer capacity;
+
+
+
+
+
+    // Explicit setter for course (helps static analyzers / code that doesn't process Lombok)
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
 
    /* @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -1,6 +1,7 @@
 package com.renukiran.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.renukiran.dto.ApiErrorResponse;
 import com.renukiran.dto.ErrorResponse;
 import com.renukiran.dto.SignInResponse;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse( HttpStatus.BAD_REQUEST.value(),"INVALID_FORMAT", List.of(errorMessage)));
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(
+    public ResponseEntity<ApiErrorResponse<Object>> handleValidationException(
             MethodArgumentNotValidException ex) {
 
         List<String> errors = ex.getBindingResult()
@@ -73,11 +74,12 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "VALIDATION_FAILED",
-                errors
-        );
+        ApiErrorResponse<Object> response = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .errorCode("VALIDATION_FAILED")
+                .message("Validation failed")
+                .details(errors)
+                .build();
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -86,32 +88,32 @@ public class GlobalExceptionHandler {
      * Handle generic exceptions
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-
+    public ResponseEntity<ApiErrorResponse<Object>> handleGeneric(Exception ex) {
 
 
         // Log the exception so it is visible in the console/log files
         log.error("Unhandled exception caught by GlobalExceptionHandler", ex);
 
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "INTERNAL_ERROR",
-                List.of("Something went wrong")
-        );
+        ApiErrorResponse<Object> response = ApiErrorResponse.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .errorCode("INTERNAL_ERROR")
+                .message("Something went wrong")
+                .details(List.of(ex.getMessage()))
+                .build();
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(ApplicationException.class)
-    public ResponseEntity<ErrorResponse> handleAppException(ApplicationException ex) {
-
+    public ResponseEntity<ApiErrorResponse<Object>> handleAppException(ApplicationException ex) {
 
         // Log application exceptions for debugging
         log.error("ApplicationException: {} - {}", ex.getErrorCode(), ex.getMessage(), ex);
 
-        ErrorResponse response = new ErrorResponse(
-                ex.getHttpStatus().value(),
-                ex.getErrorCode(),
-               List.of(ex.getMessage())
-        );
+        ApiErrorResponse<Object> response = ApiErrorResponse.builder()
+                .status(ex.getHttpStatus().value())
+                .errorCode(ex.getErrorCode())
+                .message(ex.getMessage())
+                .details(List.of(ex.getMessage()))
+                .build();
 
         return new ResponseEntity<>(response, ex.getHttpStatus());
     }

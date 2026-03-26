@@ -34,7 +34,9 @@ public class ApplicationFormService {
     }
 
     public List<ApplicationForm> listAll() {
-        return repository.findAll();
+        List<ApplicationForm> forms = repository.findAll();
+        forms.stream().forEach(ApplicationFormService::removeNestedObjects);
+        return forms;
     }
 
     public BaseResponse<ApplicationForm> getById(Long id) {
@@ -43,13 +45,24 @@ public class ApplicationFormService {
 
         Optional<ApplicationForm> form = repository.findById(id);
         if (form.isPresent()) {
+            ApplicationForm formData = form.get();
+            removeNestedObjects(formData);
             response.setStatus(APIStatus.SUCCESS);
-            response.setData(form.get());
+            response.setData(formData);
         } else {
             response.setStatus(APIStatus.FAILURE);
             response.setMessage("ApplicationForm not found with id: " + id);
         }
         return response;
+    }
+
+    private static void removeNestedObjects(ApplicationForm formData) {
+        formData.getAdmissions().stream().forEach(admission -> {
+            admission.setCandidate(null);
+            admission.getBatch().getCourse().getBatchesList().stream().forEach(batch -> {
+               batch.setCourse(null);
+           });
+        });
     }
 
     public BaseResponse<ApplicationForm> update(Long id, ApplicationForm updated) {

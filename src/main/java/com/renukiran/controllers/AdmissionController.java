@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdmissionController {
     private final AdmissionService admissionService;
+
+
     @PostMapping
     public ResponseEntity<AdmissionResponse> createAdmission(@Valid @RequestBody AdmissionRequest admissionRequest){
         AdmissionResponse response = admissionService.registerAdmission(admissionRequest);
