@@ -35,4 +35,8 @@ public class Users {
     private Set<String> skills;
     @Column(nullable = false)
     private String userType;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
 }

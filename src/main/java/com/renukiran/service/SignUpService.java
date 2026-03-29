@@ -1,11 +1,14 @@
 package com.renukiran.service;
 
 import com.renukiran.dto.SignUpRequest;
+import com.renukiran.dto.UserResponse;
 import com.renukiran.entity.Users;
 import com.renukiran.repository.SignUpRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,6 +44,50 @@ public class SignUpService {
     public Users findTrainer(Long trackingId){
         return signUpRepository.findById(trackingId).orElseThrow(() ->
                 new RuntimeException("Trainer not found for tracking number: " +trackingId));
+    }
 
+    public List<UserResponse> getAllUsers() {
+        return signUpRepository.findAll().stream()
+                .map(UserResponse::from)
+                .toList();
+    }
+
+    public UserResponse getUserById(Long id) {
+        Users user = signUpRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        return UserResponse.from(user);
+    }
+
+    public void deleteUser(Long id) {
+        if (!signUpRepository.existsById(id)) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
+        signUpRepository.deleteById(id);
+    }
+
+    public UserResponse createUser(SignUpRequest request) {
+        return UserResponse.from(signUp(request));
+    }
+
+    @Transactional
+    public UserResponse updateUser(Long id, SignUpRequest request) {
+        Users user = signUpRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setUsername(request.userName());
+        user.setEmail(request.email());
+        user.setPhone(request.phone());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setSkills(request.skills());
+        user.setUserType(request.userType());
+        return UserResponse.from(signUpRepository.save(user));
+    }
+
+    @Transactional
+    public UserResponse toggleUserStatus(Long id) {
+        Users user = signUpRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setActive(!user.isActive());
+        return UserResponse.from(signUpRepository.save(user));
     }
 }

@@ -9,6 +9,50 @@ This document describes the authentication flow for **Admin users** in the syste
 * The application uses an **in-memory (runtime) database**.
 * All registered users are **lost after server restart**.
 * Authentication token support is **not yet implemented** (`token` is currently `null`).
+* A **temporary admin account** is automatically seeded into the database on every startup (see below).
+
+---
+
+## 🧪 Temporary Admin Login (Auto-Seeded)
+
+> ⚠️ **FOR DEVELOPMENT / TESTING ONLY.** These credentials are inserted automatically by `DataInitializer` every time the server starts. Remove `DataInitializer.java` before deploying to production.
+
+| Field    | Value                      |
+| -------- | -------------------------- |
+| Username | `TempAdmin`                |
+| Password | `Admin@1234`               |
+| Email    | `tempAdmin@renukiran.com`  |
+| UserType | `ADMIN`                    |
+
+### Use these credentials directly with the login endpoint
+
+**Endpoint**
+
+```
+POST /auth/admin
+```
+
+**Request Body**
+
+```json
+{
+  "userName": "TempAdmin",
+  "password": "Admin@1234"
+}
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Admin login successful",
+  "token": null,
+  "statusCode": 200
+}
+```
+
+You can also inspect the seeded data via the H2 console at **`http://localhost:8080/h2-console`** (JDBC URL: `jdbc:h2:mem:RKDB`, username: `sa`, password: `password`).
 
 ---
 
