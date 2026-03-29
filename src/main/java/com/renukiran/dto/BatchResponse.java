@@ -1,41 +1,27 @@
 package com.renukiran.dto;
 
-import com.renukiran.entity.Batch;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+import java.time.LocalDate;
+
+@Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class BatchResponse {
-    private Long dbId;
-    private String id;          // batchCode — matches UI field name
-    private String course;
-    private String trainer;
-    private String location;
-    private String dates;
-    private String startDate;
-    private String endDate;
-    private Integer enrolled;
-    private Integer max;
-    private String status;
-    private String notes;
 
-    public static BatchResponse from(Batch b) {
-        return BatchResponse.builder()
-                .dbId(b.getDbId())
-                .id(b.getBatchCode())
-                .course(b.getCourse())
-                .trainer(b.getTrainer())
-                .location(b.getLocation())
-                .dates(b.getDates())
-                .startDate(b.getStartDate())
-                .endDate(b.getEndDate())
-                .enrolled(b.getEnrolled())
-                .max(b.getMax())
-                .status(b.getStatus())
-                .notes(b.getNotes())
-                .build();
-    }
+    private Long id;
+    private String batchName;
+    private Long courseId;
+    private String timing;
+    private String courseName;
+    private Long trainerId;
+    private String trainerName;
+    private Integer capacity;
+    private String status;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

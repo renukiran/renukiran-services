@@ -1,43 +1,50 @@
 package com.renukiran.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "admissions",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_admission_number", columnNames = "admissionNumber"),
-                @UniqueConstraint(name = "uk_candidate_course", columnNames = {"candidate_id", "course_id"}
-                ),
-                @UniqueConstraint(name = "uk_candidate_batch_timing", columnNames = {"candidate_id", "batch_no", "timing"}
-                )
-        })
+       uniqueConstraints = @UniqueConstraint(name = "uk_candidate_batch", columnNames = {"candidate_id", "batch_id"}))
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Admission {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long admissionId;
 
     @Column(nullable = false, unique = true)
+    @Id
     private String admissionNumber;
 
-    private LocalDate admissionDate;
-
-    private String batchNo;
-
-    private String timing;
-
-    // Relationships
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id", nullable = false)
-    private Candidate candidate;
+    @JsonBackReference
+    private ApplicationForm candidate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "batch_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Batch batch;
+
+    // Explicit getters/setters to help static analysis and ensure availability even if Lombok isn't processed
+    public ApplicationForm getCandidate() {
+        return candidate;
+    }
+
+    public void setCandidate(ApplicationForm candidate) {
+        this.candidate = candidate;
+    }
+
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public void setBatch(Batch batch) {
+        this.batch = batch;
+    }
 }

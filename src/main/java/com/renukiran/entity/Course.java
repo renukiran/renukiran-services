@@ -1,5 +1,6 @@
 package com.renukiran.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +29,26 @@ public class Course {
 
     private Integer durationMonths;
 
+    private Integer maxBatchSize;
+
     private String instructor;
 
-    @OneToMany(mappedBy = "course")
-    private List<Admission> admissions = new ArrayList<>();
+    private String category;
+
+    private String description;
+
+    private String mcqAssessment;
+
+    private String practicalAssessment;
+
+    private String caseStudyAssessment;
+
+    private String status;
+
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Batch> batchesList = new ArrayList<>();
+
+
 }

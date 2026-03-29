@@ -1,43 +1,34 @@
-package com.renukiran.entity;
-
+﻿package com.renukiran.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.time.LocalDate;
 @Entity
-@Table(name = "batches")
+@Table(name = "batches",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"batch_name", "start_date"}))
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Batch {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long dbId;
-
-    @Column(nullable = false, unique = true)
-    private String batchCode;   // e.g. "B1", "B2"
-
-    private String course;
-    private String trainer;
-    private String location;
-    private String dates;       // human-readable "Jan – Mar 2026"
-    private String startDate;
-    private String endDate;
-
+    private Long id;
+    @Column(name = "batch_name", nullable = false)
+    private String batchName;
+    private String timing;
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+    @ManyToOne
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private Trainer trainer;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
     @Column(nullable = false)
-    @Builder.Default
-    private Integer enrolled = 0;
-
-    @Column(name = "capacity", nullable = false)
-    @Builder.Default
-    private Integer max = 20;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private String status = "Upcoming";
-
-    @Column(length = 500)
-    private String notes;
+    private Integer capacity;
 }
