@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,8 @@ import java.util.Set;
 public class DataInitializer {
 
     private final SignUpRepository signUpRepository;
+    private final CourseRepository courseRepository;
+    private final TrainerRepository trainerRepository;
     private final BatchRepository batchRepository;
     private final PlacementRepository placementRepository;
     private final NotificationRepository notificationRepository;
@@ -47,24 +50,42 @@ public class DataInitializer {
                 log.info("[DataInitializer] Temporary admin '{}' seeded.", tempUsername);
             }
 
+            // ── Courses ───────────────────────────────────────────────────────
+            if (courseRepository.count() == 0) {
+                List<Course> courses = List.of(
+                    Course.builder().courseName("Stitching Basic").instructor("Suman Kumar").durationMonths(3).maxBatchSize(20).category("Vocational").status("Active").build(),
+                    Course.builder().courseName("Computer Fundamentals").instructor("Raj Patel").durationMonths(3).maxBatchSize(20).category("Technical").status("Active").build(),
+                    Course.builder().courseName("Beauty Basic").instructor("Asha Mehra").durationMonths(3).maxBatchSize(20).category("Vocational").status("Active").build(),
+                    Course.builder().courseName("Food Enterprise").instructor("Suman Kumar").durationMonths(3).maxBatchSize(20).category("Entrepreneurship").status("Active").build()
+                );
+                courseRepository.saveAll(courses);
+                log.info("[DataInitializer] {} courses seeded.", courses.size());
+            }
+
+            // ── Trainers ──────────────────────────────────────────────────────
+            if (trainerRepository.count() == 0) {
+                for (String name : List.of("Suman Kumar", "Raj Patel", "Asha Mehra", "Priya T.")) {
+                    Trainer t = new Trainer();
+                    t.setName(name);
+                    trainerRepository.save(t);
+                }
+                log.info("[DataInitializer] Trainers seeded.");
+            }
+
             // ── Batches ───────────────────────────────────────────────────────
-            if (batchRepository.count() == 0) {
+            if (batchRepository.count() == 0 && courseRepository.count() > 0 && trainerRepository.count() > 0) {
+                List<Course> courses = courseRepository.findAll();
+                List<Trainer> trainers = trainerRepository.findAll();
                 List<Batch> batches = List.of(
-                    Batch.builder().batchCode("B1").course("Stitching Basic").trainer("Suman Kumar")
-                            .location("Main Hall").dates("Jan – Mar 2026").startDate("2026-01-01")
-                            .endDate("2026-03-31").enrolled(18).max(20).status("Ongoing").build(),
-                    Batch.builder().batchCode("B2").course("Computer Fundamentals").trainer("Raj Patel")
-                            .location("Lab Room").dates("Jan – Apr 2026").startDate("2026-01-15")
-                            .endDate("2026-04-15").enrolled(20).max(20).status("Ongoing").build(),
-                    Batch.builder().batchCode("B3").course("Beauty Basic").trainer("Asha Mehra")
-                            .location("Room 3").dates("Nov 2025 – Jan 2026").startDate("2025-11-01")
-                            .endDate("2026-01-31").enrolled(15).max(20).status("Completed").build(),
-                    Batch.builder().batchCode("B4").course("Stitching Basic").trainer("Priya T.")
-                            .location("Main Hall").dates("Dec 2025 – Feb 2026").startDate("2025-12-01")
-                            .endDate("2026-02-28").enrolled(12).max(20).status("Completed").build(),
-                    Batch.builder().batchCode("B5").course("Food Enterprise").trainer("Suman Kumar")
-                            .location("Kitchen Lab").dates("Apr – Jun 2026").startDate("2026-04-01")
-                            .endDate("2026-06-30").enrolled(0).max(20).status("Upcoming").build()
+                    Batch.builder().batchName("Stitching Basic Jan-Mar 2026").course(courses.get(0))
+                            .trainer(trainers.get(0)).startDate(LocalDate.of(2026,1,1))
+                            .endDate(LocalDate.of(2026,3,31)).capacity(20).build(),
+                    Batch.builder().batchName("Computer Fund Jan-Apr 2026").course(courses.get(1))
+                            .trainer(trainers.get(1)).startDate(LocalDate.of(2026,1,15))
+                            .endDate(LocalDate.of(2026,4,15)).capacity(20).build(),
+                    Batch.builder().batchName("Beauty Basic Apr-Jul 2026").course(courses.get(2))
+                            .trainer(trainers.get(2)).startDate(LocalDate.of(2026,4,1))
+                            .endDate(LocalDate.of(2026,7,31)).capacity(20).build()
                 );
                 batchRepository.saveAll(batches);
                 log.info("[DataInitializer] {} batches seeded.", batches.size());

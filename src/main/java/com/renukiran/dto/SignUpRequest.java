@@ -20,16 +20,13 @@ public record SignUpRequest(
         @NotBlank
         String email,
 
-        @Pattern(regexp = "^\\+91[0-9]{10}$")
         String phone,
 
         @NotBlank
         String firstName,
 
-        @NotBlank
         String lastName,
 
-        @NotEmpty
         Set<String> skills,
 
         @NotEmpty

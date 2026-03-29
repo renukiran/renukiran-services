@@ -1,7 +1,7 @@
 package com.renukiran.controllers;
 
 import com.renukiran.dto.CandidateResponse;
-import com.renukiran.repository.CandidateRepository;
+import com.renukiran.repository.ApplicationFormRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CandidateController {
 
-    private final CandidateRepository candidateRepository;
+    private final ApplicationFormRepository applicationFormRepository;
 
     @GetMapping("/candidates")
     public ResponseEntity<List<CandidateResponse>> getAllCandidates() {
-        List<CandidateResponse> candidates = candidateRepository.findAll()
+        List<CandidateResponse> candidates = applicationFormRepository.findAll()
                 .stream()
                 .map(CandidateResponse::from)
                 .collect(Collectors.toList());
@@ -27,7 +27,7 @@ public class CandidateController {
 
     @GetMapping("/candidates/{id}")
     public ResponseEntity<CandidateResponse> getCandidateById(@PathVariable Long id) {
-        return candidateRepository.findById(id)
+        return applicationFormRepository.findById(id)
                 .map(CandidateResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

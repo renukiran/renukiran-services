@@ -11,6 +11,8 @@ public class SignInResponse {
     private String message;
     private List<String> errors;
     private int statusCode;
+    private String userType;
+    private String userName;
 
     public SignInResponse() {
     }
@@ -52,6 +54,22 @@ public class SignInResponse {
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
 
