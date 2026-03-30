@@ -1,4 +1,6 @@
 package com.renukiran.enums;
 
-public class RoleType {
+public enum RoleType {
+    TRAINER,
+    COORDINATOR;
 }

@@ -199,4 +199,3 @@ public class TrainerDashboardService {
         return Math.max(0, (int) ChronoUnit.DAYS.between(startDate, effectiveEndDate) + 1);
     }
 }
-javascript:ins('CANDIDATE_ATTENDANCE',true

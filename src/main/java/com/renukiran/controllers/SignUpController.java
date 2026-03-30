@@ -2,9 +2,11 @@ package com.renukiran.controllers;
 
 import com.renukiran.dto.SignUpRequest;
 import com.renukiran.dto.TrainerAvailabilityRequest;
+import com.renukiran.dto.UserRequest;
 import com.renukiran.dto.UserResponse;
 import com.renukiran.entity.Users;
 import com.renukiran.service.SignUpService;
+import com.renukiran.service.UserManagementService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,12 @@ import java.util.UUID;
 public class SignUpController {
 
     private final SignUpService signUpService;
+    private final UserManagementService userManagementService;
 
     @PostMapping("/trainers")
-    public ResponseEntity<String> signup(@Valid @RequestBody SignUpRequest request) {
-        Users user = signUpService.signUp(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Signup successful! Your account has been created.");
+    public ResponseEntity<UserResponse> addUser(@Valid @RequestBody UserRequest request) {
+        UserResponse userResponse = userManagementService.createUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
     }
 
 

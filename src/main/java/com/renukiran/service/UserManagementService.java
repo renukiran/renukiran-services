@@ -1,15 +1,19 @@
 package com.renukiran.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.renukiran.dto.SignUpRequest;
+import com.renukiran.dto.UserRequest;
+import com.renukiran.dto.UserResponse;
+import com.renukiran.entity.Course;
+import com.renukiran.entity.Role;
+import com.renukiran.entity.Users;
+import com.renukiran.enums.RoleType;
+import com.renukiran.repository.*;
 import org.springframework.stereotype.Service;
 
 import com.renukiran.dto.UserManagementResponse;
-import com.renukiran.repository.TrainerRepository;
-import com.renukiran.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 public class UserManagementService {
 
     private final TrainerRepository trainerRepository;
+    private final SignUpRepository signUpRepository;
+    private final RoleRepository roleRepo;
+    private final CourseRepository courseRepo;
 
     public List<UserManagementResponse> getAllUsers() {
         // 1. Fetch and map Trainers
@@ -49,5 +56,51 @@ public class UserManagementService {
         
         return allUsers;
     }
-    
+
+    public UserResponse createUser(UserRequest dto) {
+
+        if (signUpRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        Set<Role> roles = dto.getRoles().stream()
+                .map(roleType -> roleRepo.findByName(roleType)
+                        .orElseThrow(() -> new RuntimeException("Role not found")))
+                .collect(Collectors.toSet());
+
+        Users user = Users.builder()
+                .username(dto.getFullName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .password(dto.getPassword())
+                .roles(roles)
+                .build();
+
+        if (dto.getRoles().contains(RoleType.TRAINER)) {
+
+            List<Course> courses = courseRepo.findAllById(dto.getCourseIds());
+
+            if (courses.size() != dto.getCourseIds().size()) {
+                throw new RuntimeException("Invalid courseIds");
+            }
+
+            user.setCourses(new HashSet<>(courses));
+        }
+
+        signUpRepository.save(user);
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .skills(user.getCourses().stream()
+                        .map(Course::getCourseName)
+                        .collect(Collectors.toSet()))
+                .active(user.isActive())
+                .userType(new HashSet<>(user.getRoles()).toString())
+                .build();
+    }
+
+
+
 }

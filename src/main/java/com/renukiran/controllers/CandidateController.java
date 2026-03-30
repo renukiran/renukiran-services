@@ -1,3 +1,4 @@
+/*
 package com.renukiran.controllers;
 
 import com.renukiran.dto.CandidateResponse;
@@ -33,3 +34,4 @@ public class CandidateController {
                 .orElse(ResponseEntity.notFound().build());
     }
 }
+*/

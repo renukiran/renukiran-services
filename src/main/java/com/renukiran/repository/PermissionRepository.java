@@ -1,4 +1,7 @@
 package com.renukiran.repository;
 
-public interface PermissionRepository {
+import com.renukiran.entity.Permission;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PermissionRepository extends JpaRepository<Permission, Long> {
 }

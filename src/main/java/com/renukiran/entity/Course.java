@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "courses")
@@ -49,6 +50,10 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Batch> batchesList = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "courses")
+    private Set<Users> users;
+
 
 
 }

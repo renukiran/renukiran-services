@@ -3,13 +3,13 @@ package com.renukiran.service;
 import com.renukiran.dto.BatchRequest;
 import com.renukiran.dto.BatchResponse;
 import com.renukiran.entity.Batch;
-<<<<<<< HEAD
+
 import com.renukiran.repository.BatchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-=======
+
 import com.renukiran.entity.Course;
 import com.renukiran.entity.Trainer;
 import com.renukiran.exception.BusinessValidationException;
@@ -22,14 +22,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
->>>>>>> 7303c45d4cfaa05a7ad6af1e134b47b108598a74
+
 
 @Service
 @RequiredArgsConstructor
 public class BatchService {
 
     private final BatchRepository batchRepository;
-<<<<<<< HEAD
+    private final CourseRepository courseRepository;
+    private final TrainerRepository trainerRepository;
+
+/*
 
     public List<BatchResponse> getAllBatches() {
         return batchRepository.findAll().stream()
@@ -91,9 +94,9 @@ public class BatchService {
         }
         batchRepository.deleteById(id);
     }
-=======
-    private final CourseRepository courseRepository;
-    private final TrainerRepository trainerRepository;
+
+*/
+
 
     @Transactional
     public BatchResponse create(BatchRequest request) {
@@ -183,5 +186,4 @@ public class BatchService {
         response.setStartDate(batch.getStartDate());
        return response;
     }
->>>>>>> 7303c45d4cfaa05a7ad6af1e134b47b108598a74
 }

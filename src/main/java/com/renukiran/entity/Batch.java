@@ -1,8 +1,11 @@
-﻿package com.renukiran.entity;
+package com.renukiran.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
+
 @Entity
 @Table(name = "batches",
         uniqueConstraints = @UniqueConstraint(columnNames = {"batch_name", "start_date"}))
@@ -31,4 +34,5 @@ public class Batch {
     private LocalDate endDate;
     @Column(nullable = false)
     private Integer capacity;
+
 }
