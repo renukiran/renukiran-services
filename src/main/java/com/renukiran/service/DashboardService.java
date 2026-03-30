@@ -1,8 +1,8 @@
 package com.renukiran.service;
 
 import com.renukiran.dto.AdminStatsResponse;
+import com.renukiran.repository.ApplicationFormRepository;
 import com.renukiran.repository.BatchRepository;
-import com.renukiran.repository.CandidateRepository;
 import com.renukiran.repository.CourseRepository;
 import com.renukiran.repository.NotificationRepository;
 import com.renukiran.repository.PlacementRepository;
@@ -16,15 +16,15 @@ public class DashboardService {
 
     private final CourseRepository courseRepository;
     private final BatchRepository batchRepository;
-    private final CandidateRepository candidateRepository;
+    private final ApplicationFormRepository applicationFormRepository;
     private final PlacementRepository placementRepository;
     private final NotificationRepository notificationRepository;
     private final SignUpRepository signUpRepository;
 
     public AdminStatsResponse getAdminStats() {
         long totalCourses         = courseRepository.count();
-        long activeBatches        = batchRepository.countByStatus("Ongoing");
-        long candidatesEnrolled   = candidateRepository.count();
+        long activeBatches        = batchRepository.count();
+        long candidatesEnrolled   = applicationFormRepository.count();
         long placedTotal          = placementRepository.count();
         long activeJobs           = placementRepository.countByStatus("Active");
         long leftJob              = placementRepository.countByStatus("Left Job");

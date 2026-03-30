@@ -3,6 +3,7 @@ package com.renukiran.service;
 import com.renukiran.dto.SignUpRequest;
 import com.renukiran.dto.UserResponse;
 import com.renukiran.entity.Users;
+import com.renukiran.exception.DuplicateResourceException;
 import com.renukiran.repository.SignUpRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,11 @@ public class SignUpService {
 
     public Users signUp(SignUpRequest request){
         if (signUpRepository.existsByUsername(request.userName())) {
-            throw new RuntimeException("Username already exists");
+            throw new DuplicateResourceException("Username already exists: " + request.userName(), "DUPLICATE_USERNAME");
         }
 
         if (signUpRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already registered");
+            throw new DuplicateResourceException("Email already registered: " + request.email(), "DUPLICATE_EMAIL");
         }
         Users trainer = Users.builder()
                 .username(request.userName())

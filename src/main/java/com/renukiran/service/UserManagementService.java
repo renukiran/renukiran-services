@@ -89,6 +89,8 @@ public class UserManagementService {
 
         signUpRepository.save(user);
 
+        Set<String> rolesList = user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toSet());
+
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -97,7 +99,7 @@ public class UserManagementService {
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
                 .active(user.isActive())
-                .userType(new HashSet<>(user.getRoles()).toString())
+                .userType(String.join(",",rolesList))
                 .build();
     }
 

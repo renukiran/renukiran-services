@@ -33,7 +33,8 @@ public class Users {
     private String lastName;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> skills;
-    @Column(nullable = false)
+
+    @Column(nullable = true)
     private String userType;
 
     @Column(nullable = false)
@@ -44,7 +45,7 @@ public class Users {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> roles;
 
     @ManyToMany
     @JoinTable(
@@ -52,5 +53,5 @@ public class Users {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private Set<Course> courses = new HashSet<>();
+    private Set<Course> courses;
 }

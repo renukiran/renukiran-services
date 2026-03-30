@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -20,8 +21,28 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
+    @GetMapping("/unread-count")
+    public ResponseEntity<Map<String, Long>> getUnreadCount() {
+        return ResponseEntity.ok(Map.of("count", notificationService.getUnreadCount()));
+    }
+
+    @PostMapping
+    public ResponseEntity<NotificationResponse> createNotification(@RequestBody Map<String, String> body) {
+        String message = body.getOrDefault("message", "").trim();
+        if (message.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(notificationService.createNotification(message));
+    }
+
     @PatchMapping("/{id}/read")
     public ResponseEntity<NotificationResponse> markAsRead(@PathVariable Long id) {
         return ResponseEntity.ok(notificationService.markAsRead(id));
+    }
+
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead() {
+        notificationService.markAllAsRead();
+        return ResponseEntity.noContent().build();
     }
 }

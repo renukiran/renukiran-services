@@ -20,10 +20,29 @@ public class NotificationService {
                 .toList();
     }
 
+    public long getUnreadCount() {
+        return notificationRepository.countByIsRead(false);
+    }
+
+    public NotificationResponse createNotification(String message) {
+        Notification n = Notification.builder()
+                .message(message)
+                .isRead(false)
+                .build();
+        return NotificationResponse.from(notificationRepository.save(n));
+    }
+
     public NotificationResponse markAsRead(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
         notification.setIsRead(true);
         return NotificationResponse.from(notificationRepository.save(notification));
+    }
+
+    public void markAllAsRead() {
+        List<Notification> unread = notificationRepository.findAllByOrderByCreatedAtDesc()
+                .stream().filter(n -> !Boolean.TRUE.equals(n.getIsRead())).toList();
+        unread.forEach(n -> n.setIsRead(true));
+        notificationRepository.saveAll(unread);
     }
 }
