@@ -59,7 +59,7 @@ public class AssessmentService {
             ApplicationForm candidate = admission.getCandidate();
             CandidateAssessment assessment = findAssessment(candidate.getId(), assessments);
             Double finalPercentage = calculateFinalPercentage(assessment, weights);
-            String result = resolveResult(finalPercentage);
+            String result = resolveResult(finalPercentage, course);
 
             if ("Pass".equals(result)) {
                 passCount++;
@@ -87,7 +87,7 @@ public class AssessmentService {
                 .mcqWeight(weights.mcqWeight())
                 .practicalWeight(weights.practicalWeight())
                 .caseStudyWeight(weights.caseStudyWeight())
-                .passThreshold(DEFAULT_PASS_THRESHOLD)
+                .passThreshold(resolvePassThreshold(course))
                 .passCount(passCount)
                 .failCount(failCount)
                 .passRate(calculatePassRate(passCount, admissions.size()))
@@ -123,7 +123,7 @@ public class AssessmentService {
             totalScore += finalPercentage;
             highestScore = Math.max(highestScore, finalPercentage);
 
-            String result = resolveResult(finalPercentage);
+            String result = resolveResult(finalPercentage, course);
             if ("Pass".equals(result)) {
                 passCount++;
             }
@@ -150,7 +150,7 @@ public class AssessmentService {
                 .mcqWeight(weights.mcqWeight())
                 .practicalWeight(weights.practicalWeight())
                 .caseStudyWeight(weights.caseStudyWeight())
-                .passThreshold(DEFAULT_PASS_THRESHOLD)
+                .passThreshold(resolvePassThreshold(course))
                 .published(published)
                 .candidates(candidates)
                 .build();
@@ -193,7 +193,7 @@ public class AssessmentService {
         int passCount = 0;
         int failCount = 0;
         for (CandidateAssessment assessment : allAssessments) {
-            String result = resolveResult(calculateFinalPercentage(assessment, weights));
+            String result = resolveResult(calculateFinalPercentage(assessment, weights), course);
             if ("Pass".equals(result)) {
                 passCount++;
             } else if ("Fail".equals(result)) {
@@ -328,13 +328,6 @@ public class AssessmentService {
         return Math.round((weightedScore / totalWeight) * 10.0) / 10.0;
     }
 
-    private String resolveResult(Double finalPercentage) {
-        if (finalPercentage == null) {
-            return null;
-        }
-        return finalPercentage >= DEFAULT_PASS_THRESHOLD ? "Pass" : "Fail";
-    }
-
     private Double calculatePassRate(int passCount, int totalCandidates) {
         if (totalCandidates <= 0) {
             return 0.0;
@@ -344,6 +337,17 @@ public class AssessmentService {
 
     private Double roundOneDecimal(double value) {
         return Math.round(value * 10.0) / 10.0;
+    }
+
+    private Integer resolvePassThreshold(Course course) {
+        return course.getPassThreshold() != null ? course.getPassThreshold() : DEFAULT_PASS_THRESHOLD;
+    }
+
+    private String resolveResult(Double finalPercentage, Course course) {
+        if (finalPercentage == null) {
+            return null;
+        }
+        return finalPercentage >= resolvePassThreshold(course) ? "Pass" : "Fail";
     }
 
     private record AssessmentWeights(int mcqWeight, int practicalWeight, int caseStudyWeight) {

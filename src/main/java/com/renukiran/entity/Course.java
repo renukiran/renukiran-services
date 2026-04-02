@@ -43,6 +43,10 @@ public class Course {
 
     private String caseStudyAssessment;
 
+    private Integer passThreshold;
+
+    private Integer retentionRate;
+
     private String status;
 
 

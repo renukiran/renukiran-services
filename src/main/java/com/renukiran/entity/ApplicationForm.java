@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.PrePersist;
@@ -33,6 +34,10 @@ public class ApplicationForm {
     private Long id;
 
     private String fullName;
+
+    @ManyToOne
+    @JoinColumn(name = "applied_course_id")
+    private Course appliedCourse;
 
     @Enumerated(EnumType.STRING)
     private ApplicationStatus applicationStatus;

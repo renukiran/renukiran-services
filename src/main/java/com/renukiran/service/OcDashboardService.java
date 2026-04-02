@@ -102,6 +102,9 @@ public class OcDashboardService {
     }
 
     private String resolveCourseName(ApplicationForm application) {
+        if (application.getAppliedCourse() != null) {
+            return application.getAppliedCourse().getCourseName();
+        }
         if (application.getPreferredExperienceTrack() != null) {
             return formatEnumName(application.getPreferredExperienceTrack().name());
         }
