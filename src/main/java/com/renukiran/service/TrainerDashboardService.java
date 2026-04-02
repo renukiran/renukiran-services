@@ -8,6 +8,7 @@ import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.Batch;
 import com.renukiran.entity.CandidateAttendance;
 import com.renukiran.entity.Trainer;
+import com.renukiran.enums.CandidateAttendanceStatus;
 import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.AdmissionRepository;
 import com.renukiran.repository.BatchRepository;
@@ -148,7 +149,7 @@ public class TrainerDashboardService {
         }
 
         long presentCount = attendanceRecords.stream()
-                .filter(attendance -> Boolean.TRUE.equals(attendance.getPresent()))
+                .filter(attendance -> attendance.getAttendanceStatus() == CandidateAttendanceStatus.PRESENT)
                 .count();
 
         return (int) Math.round((presentCount * 100.0) / attendanceRecords.size());
@@ -181,7 +182,7 @@ public class TrainerDashboardService {
         }
 
         long presentCount = candidateRecords.stream()
-                .filter(attendance -> Boolean.TRUE.equals(attendance.getPresent()))
+                .filter(attendance -> attendance.getAttendanceStatus() == CandidateAttendanceStatus.PRESENT)
                 .count();
 
         return (int) Math.round((presentCount * 100.0) / candidateRecords.size());

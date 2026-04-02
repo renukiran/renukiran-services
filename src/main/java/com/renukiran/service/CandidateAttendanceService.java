@@ -9,6 +9,7 @@ import com.renukiran.entity.Admission;
 import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.Batch;
 import com.renukiran.entity.CandidateAttendance;
+import com.renukiran.enums.CandidateAttendanceStatus;
 import com.renukiran.exception.BusinessValidationException;
 import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.AdmissionRepository;
@@ -77,7 +78,9 @@ public class CandidateAttendanceService {
             attendance.setBatch(batch);
             attendance.setCandidate(admittedCandidates.get(entry.getCandidateId()));
             attendance.setAttendanceDate(request.getAttendanceDate());
-            attendance.setPresent(entry.getPresent());
+            attendance.setAttendanceStatus(Boolean.TRUE.equals(entry.getPresent())
+                    ? CandidateAttendanceStatus.PRESENT
+                    : CandidateAttendanceStatus.ABSENT);
             recordsToSave.add(attendance);
         }
 
@@ -115,7 +118,10 @@ public class CandidateAttendanceService {
 
         Map<Long, Boolean> attendanceByCandidateId = new HashMap<>();
         for (CandidateAttendance attendanceRecord : attendanceRecords) {
-            attendanceByCandidateId.put(attendanceRecord.getCandidate().getId(), attendanceRecord.getPresent());
+            attendanceByCandidateId.put(
+                    attendanceRecord.getCandidate().getId(),
+                    attendanceRecord.getAttendanceStatus() == CandidateAttendanceStatus.PRESENT
+            );
         }
 
         return CandidateAttendanceSheetResponse.builder()

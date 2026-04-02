@@ -102,7 +102,7 @@ public class AttendanceService {
             admittedCandidates.put(admission.getCandidate().getId(), admission.getCandidate());
         }
 
-        validateEntries(request.getEntries(), admittedCandidates.keySet());
+        validateEntries(request.getEntries(), admittedCandidates.keySet(), batchAdmissions.size());
 
         List<CandidateAttendance> existingAttendance = getBatchAttendance(batchId);
         List<CandidateAttendance> toSave = new ArrayList<>();
@@ -165,7 +165,7 @@ public class AttendanceService {
                 .toList();
     }
 
-    private void validateEntries(List<AttendanceEntryRequest> entries, Set<Long> admittedCandidateIds) {
+    private void validateEntries(List<AttendanceEntryRequest> entries, Set<Long> admittedCandidateIds, int enrolledCount) {
         Set<Long> uniqueCandidateIds = new HashSet<>();
         for (AttendanceEntryRequest entry : entries) {
             if (!admittedCandidateIds.contains(entry.getCandidateId())) {
@@ -174,6 +174,10 @@ public class AttendanceService {
             if (!uniqueCandidateIds.add(entry.getCandidateId())) {
                 throw new BusinessValidationException("Duplicate attendance entries found for the same candidate");
             }
+        }
+
+        if (entries.size() != enrolledCount) {
+            throw new BusinessValidationException("Attendance must be submitted for all enrolled candidates");
         }
     }
 
