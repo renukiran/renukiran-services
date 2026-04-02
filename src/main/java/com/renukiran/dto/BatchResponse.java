@@ -21,7 +21,6 @@ public class BatchResponse {
     private Long trainerId;
     private String trainerName;
     private Integer capacity;
-    private Long enrolledCount;
     private String status;
     private LocalDate startDate;
     private LocalDate endDate;

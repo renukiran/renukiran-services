@@ -41,11 +41,13 @@ public class AdminSignInService {
         //     return new SignInResponse(false, "Invalid password", null, 401);
         // }
 
-        return new SignInResponse(
-                true,
-                "Admin login successful",
-                null,
-                200
-        );
+        String fullName = ((user.getFirstName() != null ? user.getFirstName() : "") + " " +
+                (user.getLastName() != null ? user.getLastName() : "")).trim();
+        if (fullName.isEmpty()) fullName = user.getUsername();
+
+        SignInResponse resp = new SignInResponse(true, "Admin login successful", null, 200);
+        resp.setUserType(user.getUserType());
+        resp.setUserName(fullName);
+        return resp;
     }
 }

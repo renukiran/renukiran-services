@@ -3,6 +3,7 @@ package com.renukiran.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,6 +33,25 @@ public class Users {
     private String lastName;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> skills;
-    @Column(nullable = false)
+
+    @Column(nullable = true)
     private String userType;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_courses",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    private Set<Course> courses;
 }

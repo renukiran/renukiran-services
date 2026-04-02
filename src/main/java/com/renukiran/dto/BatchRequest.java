@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class BatchRequest{
+public class BatchRequest {
 
     @NotBlank
     @Size(max = 100)

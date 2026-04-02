@@ -40,4 +40,6 @@ public class CandidateAttendance {
     @Enumerated(EnumType.STRING)
     @Column(name = "attendance_status", nullable = false)
     private CandidateAttendanceStatus attendanceStatus;
+    @Column(nullable = false)
+    private Boolean present;
 }

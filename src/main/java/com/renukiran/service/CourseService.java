@@ -73,6 +73,17 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    public CourseResponse getCourseById(Long id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + id));
+        return CourseResponse.builder()
+                .id(course.getCourseId())
+                .courseName(course.getCourseName())
+                .instructor(course.getInstructor())
+                .duration(course.getDurationMonths())
+                .build();
+    }
+
     public void deleteCourse(Long id) {
 
         if (!courseRepository.existsById(id)) {

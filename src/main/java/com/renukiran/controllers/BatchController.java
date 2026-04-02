@@ -6,13 +6,22 @@ import com.renukiran.service.BatchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.http.*;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/batches")
 @RequiredArgsConstructor
 public class BatchController {
+
+    private final BatchService batchService;
+
+
 
     private final BatchService service;
 
@@ -47,4 +56,34 @@ public class BatchController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+
+      /*
+    @GetMapping
+    public ResponseEntity<List<BatchResponse>> getAllBatches() {
+        return ResponseEntity.ok(batchService.getAllBatches());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BatchResponse> getBatchById(@PathVariable Long id) {
+        return ResponseEntity.ok(batchService.getBatchById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<BatchResponse> createBatch(@Valid @RequestBody BatchRequest request) {
+        BatchResponse created = batchService.createBatch(request);
+        return ResponseEntity.status(201).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BatchResponse> updateBatch(@PathVariable Long id,
+                                                     @Valid @RequestBody BatchRequest request) {
+        return ResponseEntity.ok(batchService.updateBatch(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBatch(@PathVariable Long id) {
+        batchService.deleteBatch(id);
+        return ResponseEntity.noContent().build();
+    }*/
 }
