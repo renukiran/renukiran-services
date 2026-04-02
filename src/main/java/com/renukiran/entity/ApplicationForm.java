@@ -14,12 +14,14 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.PrePersist;
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -31,6 +33,11 @@ public class ApplicationForm {
     private Long id;
 
     private String fullName;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus applicationStatus;
+
+    private LocalDate createdDate;
 
     private int age;
 
@@ -159,7 +166,14 @@ public class ApplicationForm {
     @JsonManagedReference
     private Set<Admission> admissions = new HashSet<>();
 
-
-
+    @PrePersist
+    void prePersist() {
+        if (applicationStatus == null) {
+            applicationStatus = ApplicationStatus.NEW;
+        }
+        if (createdDate == null) {
+            createdDate = LocalDate.now();
+        }
+    }
 
 }
