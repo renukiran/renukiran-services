@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for the Renukiran Spring Boot app
 # Build stage: use a JDK image and the included Gradle wrapper to produce the fat jar
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /workspace
 # Copy only the files needed for the build first to leverage layer caching
 COPY gradlew .
@@ -11,7 +11,7 @@ COPY src/ src/
 RUN chmod +x gradlew && ./gradlew bootJar --no-daemon -x test
 
 # Runtime stage: use a smaller JRE image
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:17-jre
 ARG JAR_FILE=build/libs/renukiran-services-0.0.1-SNAPSHOT.jar
 WORKDIR /app
 # Copy the jar from the builder stage
