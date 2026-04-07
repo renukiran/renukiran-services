@@ -3,6 +3,7 @@ package com.renukiran.service;
 import com.renukiran.dto.BaseResponse;
 import com.renukiran.entity.APIStatus;
 import com.renukiran.entity.ApplicationForm;
+import com.renukiran.enums.ApplicationStatus;
 import com.renukiran.repository.ApplicationFormRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,12 @@ public class ApplicationFormService {
     public ApplicationForm create(ApplicationForm form) {
         log.info("Creating ApplicationForm: {}", form);
         try {
+            if (form.getApplicationStatus() == null) {
+                form.setApplicationStatus(ApplicationStatus.NEW);
+            }
+            if (form.getCreatedDate() == null) {
+                form.setCreatedDate(LocalDate.now());
+            }
             ApplicationForm saved = repository.save(form);
             log.info("Saved ApplicationForm id={}", saved.getId());
             return saved;

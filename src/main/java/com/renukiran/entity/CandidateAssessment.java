@@ -1,6 +1,5 @@
 package com.renukiran.entity;
 
-import com.renukiran.enums.CandidateAttendanceStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,19 +7,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "candidate_attendance",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "batch_id", "attendance_date"})
+        name = "candidate_assessment",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"candidate_id", "batch_id"})
 )
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CandidateAttendance {
+public class CandidateAssessment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,10 +33,21 @@ public class CandidateAttendance {
     @JoinColumn(name = "batch_id", nullable = false)
     private Batch batch;
 
-    @Column(name = "attendance_date", nullable = false)
-    private LocalDate attendanceDate;
+    @Column(name = "mcq_score")
+    private Integer mcqScore;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "attendance_status", nullable = false)
-    private CandidateAttendanceStatus attendanceStatus;
+    @Column(name = "practical_score")
+    private Integer practicalScore;
+
+    @Column(name = "case_study_score")
+    private Integer caseStudyScore;
+
+    @Column(length = 1000)
+    private String remarks;
+
+    @Column(nullable = false)
+    private Boolean published;
+
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
 }

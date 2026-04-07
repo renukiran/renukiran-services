@@ -29,6 +29,8 @@ public class CourseService {
                 .mcqAssessment(request.getMcqAssessment())
                 .practicalAssessment(request.getPracticalAssessment())
                 .caseStudyAssessment(request.getCaseStudyAssessment())
+                .passThreshold(request.getPassThreshold())
+                .retentionRate(request.getRetentionRate())
                 .build();
 
         Course saved = courseRepository.save(course);
@@ -45,6 +47,8 @@ public class CourseService {
                 .mcqAssessment(request.getMcqAssessment())
                 .practicalAssessment(request.getPracticalAssessment())
                 .caseStudyAssessment(request.getCaseStudyAssessment())
+                .passThreshold(request.getPassThreshold())
+                .retentionRate(request.getRetentionRate())
                 .build();
     }
 
@@ -63,6 +67,8 @@ public class CourseService {
                         .mcqAssessment(c.getMcqAssessment())
                         .practicalAssessment(c.getPracticalAssessment())
                         .caseStudyAssessment(c.getCaseStudyAssessment())
+                        .passThreshold(c.getPassThreshold())
+                        .retentionRate(c.getRetentionRate())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -104,6 +110,8 @@ public class CourseService {
         course.setMcqAssessment(request.getMcqAssessment());
         course.setPracticalAssessment(request.getPracticalAssessment());
         course.setCaseStudyAssessment(request.getCaseStudyAssessment());
+        course.setPassThreshold(request.getPassThreshold());
+        course.setRetentionRate(request.getRetentionRate());
 
         // 3. Persist changes
         Course updated = courseRepository.save(course);
@@ -121,6 +129,8 @@ public class CourseService {
                 .mcqAssessment(updated.getMcqAssessment())
                 .practicalAssessment(updated.getPracticalAssessment())
                 .caseStudyAssessment(updated.getCaseStudyAssessment())
+                .passThreshold(updated.getPassThreshold())
+                .retentionRate(updated.getRetentionRate())
                 .build();
     }
 }

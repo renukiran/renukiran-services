@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  renukiran:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+    # Increase reservations if needed and keep container logs visible
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

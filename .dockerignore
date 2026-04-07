@@ -1,0 +1,19 @@
+# Gradle and build output
+.gradle
+build
+
+# Local IDE files
+*.iml
+.idea
+.vscode
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker files
+Dockerfile
+.dockerignore

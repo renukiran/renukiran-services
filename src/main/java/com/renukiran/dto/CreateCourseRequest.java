@@ -25,6 +25,10 @@ public class CreateCourseRequest {
 
     private String caseStudyAssessment;
 
+    private Integer passThreshold;
+
+    private Integer retentionRate;
+
     // ====== GETTERS ======
 
     public String getCourseName() {
@@ -67,6 +71,14 @@ public class CreateCourseRequest {
         return caseStudyAssessment;
     }
 
+    public Integer getPassThreshold() {
+        return passThreshold;
+    }
+
+    public Integer getRetentionRate() {
+        return retentionRate;
+    }
+
     // ====== SETTERS ======
 
     public void setCourseName(String courseName) {
@@ -107,5 +119,13 @@ public class CreateCourseRequest {
 
     public void setCaseStudyAssessment(String caseStudyAssessment) {
         this.caseStudyAssessment = caseStudyAssessment;
+    }
+
+    public void setPassThreshold(Integer passThreshold) {
+        this.passThreshold = passThreshold;
+    }
+
+    public void setRetentionRate(Integer retentionRate) {
+        this.retentionRate = retentionRate;
     }
 }
