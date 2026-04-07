@@ -3,7 +3,6 @@ package com.renukiran.service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.renukiran.dto.SignUpRequest;
 import com.renukiran.dto.UserRequest;
 import com.renukiran.dto.UserResponse;
 import com.renukiran.entity.Course;
@@ -21,40 +20,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserManagementService {
 
-    private final TrainerRepository trainerRepository;
     private final SignUpRepository signUpRepository;
     private final RoleRepository roleRepo;
     private final CourseRepository courseRepo;
 
     public List<UserManagementResponse> getAllUsers() {
-        // 1. Fetch and map Trainers
-        // List<UserManagementResponse> trainers = trainerRepository.findAll().stream()
-        //         .map(t -> {
-        //             UserManagementResponse res = new UserManagementResponse();
-        //             res.setName(t.getFullName());
-        //             res.setEmail(t.getEmail());
-        //             res.setStatus(t.getStatus());
-        //             res.setRole("TRAINER");
-        //             return res;
-        //         }).collect(Collectors.toList());
-
-        // 2. Fetch and map Staff
-        // List<UserManagementResponse> staff = staffRepository.findAll().stream()
-        //         .map(s -> {
-        //             UserManagementResponse res = new UserManagementResponse();
-        //             res.setName(s.getFullName());
-        //             res.setEmail(s.getEmail());
-        //             res.setStatus(s.getStatus());
-        //             res.setRole("STAFF");
-        //             return res;
-        //         }).collect(Collectors.toList());
-
-        // 3. Combine both lists
-        List<UserManagementResponse> allUsers = new ArrayList<>();
-        // allUsers.addAll(trainers);
-        // allUsers.addAll(staff);
-        
-        return allUsers;
+        return signUpRepository.findAll().stream()
+                .map(user -> {
+                    UserManagementResponse res = new UserManagementResponse();
+                    res.setName(user.getUsername());
+                    res.setEmail(user.getEmail());
+                    res.setStatus(user.isActive() ? "ACTIVE" : "INACTIVE");
+                    res.setRoles(Optional.ofNullable(user.getRoles()).orElse(Collections.emptySet()).stream()
+                            .map(role -> role.getName().name())
+                            .collect(Collectors.toSet()));
+                    return res;
+                }).collect(Collectors.toList());
     }
 
     public UserResponse createUser(UserRequest dto) {
