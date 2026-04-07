@@ -95,6 +95,7 @@ public class UserManagementService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .phone(user.getPhone())
                 .skills(user.getCourses().stream()
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
