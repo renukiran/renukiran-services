@@ -68,7 +68,8 @@ public class UserManagementService {
             user.setCourses(new HashSet<>(courses));
         }
 
-        signUpRepository.save(user);
+            signUpRepository.save(user);
+
 
         Set<String> rolesList = user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toSet());
 
@@ -76,7 +77,8 @@ public class UserManagementService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .skills(user.getCourses().stream()
+                .phone(user.getPhone())
+                .skills(user.getCourses().isEmpty()? null : user.getCourses().stream()
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
                 .active(user.isActive())
