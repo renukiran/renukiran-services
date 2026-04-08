@@ -63,10 +63,10 @@ public class UserManagementService {
             throw new RuntimeException("Email already exists");
         }
 
-        Set<Role> roles = dto.getRoles().stream()
+        List<Role> roles = dto.getRoles().stream()
                 .map(roleType -> roleRepo.findByName(roleType)
                         .orElseThrow(() -> new RuntimeException("Role not found")))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         Users user = Users.builder()
                 .username(dto.getFullName())
@@ -74,6 +74,7 @@ public class UserManagementService {
                 .phone(dto.getPhone())
                 .password(dto.getPassword())
                 .roles(roles)
+                .userType(roles.get(0).getName().name())
                 .build();
 
         if (dto.getRoles().contains(RoleType.TRAINER)) {
