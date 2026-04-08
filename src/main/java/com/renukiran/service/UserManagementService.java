@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.renukiran.dto.UserManagementResponse;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class UserManagementService {
                     res.setName(user.getUsername());
                     res.setEmail(user.getEmail());
                     res.setStatus(user.isActive() ? "ACTIVE" : "INACTIVE");
-                    res.setRoles(Optional.ofNullable(user.getRoles()).orElse(Collections.emptySet()).stream()
+                    res.setRoles(Optional.ofNullable(user.getRoles()).orElse(Collections.emptyList()).stream()
                             .map(role -> role.getName().name())
                             .collect(Collectors.toSet()));
                     return res;
@@ -79,7 +80,7 @@ public class UserManagementService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .skills(user.getCourses().isEmpty()? null : user.getCourses().stream()
+                .skills(CollectionUtils.isEmpty(user.getCourses())? null : user.getCourses().stream()
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
                 .active(user.isActive())
