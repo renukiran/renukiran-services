@@ -11,4 +11,6 @@ public interface SignUpRepository extends JpaRepository<Users, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     Optional<Users> findByUsername(String username);
+
+    Optional<Users> findByIdAndDeletedFalse(Long id);
 }
