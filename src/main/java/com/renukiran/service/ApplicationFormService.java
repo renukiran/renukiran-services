@@ -3,6 +3,7 @@ package com.renukiran.service;
 import com.renukiran.dto.BaseResponse;
 import com.renukiran.entity.APIStatus;
 import com.renukiran.entity.ApplicationForm;
+import com.renukiran.entity.Admission;
 import com.renukiran.enums.ApplicationStatus;
 import com.renukiran.repository.ApplicationFormRepository;
 import org.springframework.beans.BeanUtils;
@@ -42,9 +43,22 @@ public class ApplicationFormService {
     }
 
     public List<ApplicationForm> listAll() {
+        // First update statuses for all application forms based on their batch dates
         List<ApplicationForm> forms = repository.findAll();
-        forms.stream().forEach(ApplicationFormService::removeNestedObjects);
-        return forms;
+        for (ApplicationForm form : forms) {
+            if (form == null || form.getId() == null) continue;
+            try {
+                // call the public method and ignore its response here
+                updateStatusFromBatchDates(form.getId());
+            } catch (Exception e) {
+                log.warn("Failed to update status from batch dates for application id={}", form.getId(), e);
+            }
+        }
+
+        // Re-fetch the list to reflect any persisted status changes
+        List<ApplicationForm> updatedForms = repository.findAll();
+        updatedForms.forEach(ApplicationFormService::removeNestedObjects);
+        return updatedForms;
     }
 
     public BaseResponse<ApplicationForm> getById(Long id) {
@@ -65,12 +79,25 @@ public class ApplicationFormService {
     }
 
     private static void removeNestedObjects(ApplicationForm formData) {
-        formData.getAdmissions().stream().forEach(admission -> {
-            admission.setCandidate(null);
-            admission.getBatch().getCourse().getBatchesList().stream().forEach(batch -> {
-               batch.setCourse(null);
-           });
-        });
+        if (formData == null) return;
+        List<Admission> admissions = formData.getAdmissions();
+        if (admissions == null) return;
+        for (Admission admission : admissions) {
+            if (admission == null) continue;
+            // break the back reference to avoid infinite recursion / nested objects
+            try {
+                admission.setCandidate(null);
+            } catch (Exception ignore) {
+            }
+            try {
+                if (admission.getBatch() != null) {
+                    if (admission.getBatch().getCourse() != null) {
+                        admission.getBatch().getCourse().setBatchesList(null);
+                    }
+                }
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     public BaseResponse<ApplicationForm> update(Long id, ApplicationForm updated) {
@@ -80,7 +107,8 @@ public class ApplicationFormService {
         Optional<ApplicationForm> existing = repository.findById(id);
         if (existing.isPresent()) {
             response.setStatus(APIStatus.SUCCESS);
-            BeanUtils.copyProperties(updated, existing, "id");
+            // copy properties into the actual entity (existing.get()) and preserve id
+            BeanUtils.copyProperties(updated, existing.get(), "id");
             response.setData(repository.save(existing.get()));
         } else {
             response.setStatus(APIStatus.FAILURE);
@@ -104,4 +132,68 @@ public class ApplicationFormService {
         return response;
 
     }
+
+    public void updateStatusFromBatchDates(Long id) {
+
+        Optional<ApplicationForm> existing = repository.findById(id);
+        if (existing.isEmpty()) {
+            return;
+        }
+
+        ApplicationForm form = existing.get();
+        List<Admission> admissions = form.getAdmissions();
+        if (admissions == null || admissions.isEmpty()) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        boolean anyActive = false;
+        boolean anyUpcoming = false;
+        boolean anyEnded = false;
+
+        for (Admission admission : admissions) {
+            if (admission == null) continue;
+            if (admission.getBatch() == null) continue;
+            LocalDate start = admission.getBatch().getStartDate();
+            LocalDate end = admission.getBatch().getEndDate();
+            if (start == null || end == null) continue;
+
+            if ((start.isEqual(today) || start.isBefore(today)) && (end.isEqual(today) || end.isAfter(today))) { // start <= today <= end
+                anyActive = true;
+                break; // active training takes precedence
+            } else if (end.isBefore(today)) {
+                anyEnded = true;
+            } else if (start.isAfter(today)) {
+                anyUpcoming = true;
+            }
+        }
+
+        if (anyActive) {
+            if (form.getApplicationStatus() != ApplicationStatus.TRAINING_STARTED) {
+                form.setApplicationStatus(ApplicationStatus.TRAINING_STARTED);
+            }
+        } else if (anyEnded && !anyUpcoming) {
+            if (form.getApplicationStatus() != ApplicationStatus.TRAINING_COMPLETED) {
+                form.setApplicationStatus(ApplicationStatus.TRAINING_COMPLETED);
+            }
+        }
+         repository.save(form);
+
+    }
+
+    public boolean changeStatus(Long id, ApplicationStatus newStatus) {
+        Optional<ApplicationForm> existing = repository.findById(id);
+        if (existing.isEmpty()) {
+            return false;
+        }
+        ApplicationForm form = existing.get();
+        ApplicationStatus current = form.getApplicationStatus();
+        if (current == newStatus) {
+            return false;
+        }
+        form.setApplicationStatus(newStatus);
+        repository.save(form);
+        return true;
+    }
+
 }
