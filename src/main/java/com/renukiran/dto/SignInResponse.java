@@ -13,6 +13,7 @@ public class SignInResponse {
     private int statusCode;
     private String userType;
     private String userName;
+    private Long userID;
 
     public SignInResponse() {
     }
@@ -70,6 +71,14 @@ public class SignInResponse {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public void setUserId(Long userId){
+        this.userID = userId;
+    }
+
+    public Long getUserID(){
+        return userID;
     }
 }
 
