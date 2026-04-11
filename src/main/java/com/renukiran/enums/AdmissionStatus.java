@@ -1,6 +1,6 @@
 package com.renukiran.enums;
 
-public enum ApplicationStatus {
+public enum AdmissionStatus {
     NEW,
     ASSIGNED_TO_BATCH,
     TRAINING_STARTED,

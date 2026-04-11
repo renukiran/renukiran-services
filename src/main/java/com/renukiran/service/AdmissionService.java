@@ -3,7 +3,7 @@ package com.renukiran.service;
 import com.renukiran.dto.AdmissionRequest;
 import com.renukiran.dto.AdmissionResponse;
 import com.renukiran.entity.*;
-import com.renukiran.enums.ApplicationStatus;
+import com.renukiran.enums.AdmissionStatus;
 import com.renukiran.exception.DuplicateResourceException;
 import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.*;
@@ -50,7 +50,7 @@ public class AdmissionService {
         admission.setAdmissionNumber(admissionNumber);
         admission.setCandidate(candidate);
         admission.setBatch(batch);
-        admission.setStatus(ApplicationStatus.ASSIGNED_TO_BATCH);
+        admission.setStatus(AdmissionStatus.ASSIGNED_TO_BATCH);
         try {
             admissionRepository.save(admission);
         } catch (DataIntegrityViolationException ex) {
@@ -88,14 +88,14 @@ public class AdmissionService {
         LocalDate end = batch.getEndDate();
 
 
-        ApplicationStatus newStatus = ApplicationStatus.ASSIGNED_TO_BATCH;
+        AdmissionStatus newStatus = AdmissionStatus.ASSIGNED_TO_BATCH;
         if (start != null && end != null) {
             if ((start.isEqual(today) || start.isBefore(today)) && (end.isEqual(today) || end.isAfter(today))) {
-                newStatus = ApplicationStatus.TRAINING_STARTED;
+                newStatus = AdmissionStatus.TRAINING_STARTED;
             } else if (end.isBefore(today)) {
-                newStatus = ApplicationStatus.TRAINING_COMPLETED;
+                newStatus = AdmissionStatus.TRAINING_COMPLETED;
             } else {
-                newStatus = ApplicationStatus.ASSIGNED_TO_BATCH;
+                newStatus = AdmissionStatus.ASSIGNED_TO_BATCH;
             }
         }
 

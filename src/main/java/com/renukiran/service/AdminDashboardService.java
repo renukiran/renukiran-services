@@ -12,10 +12,9 @@ import com.renukiran.entity.CandidateAssessment;
 import com.renukiran.entity.CandidateAttendance;
 import com.renukiran.entity.CandidateFollowUp;
 import com.renukiran.entity.Course;
-import com.renukiran.enums.ApplicationStatus;
+import com.renukiran.enums.AdmissionStatus;
 import com.renukiran.enums.CandidateAttendanceStatus;
 import com.renukiran.repository.AdmissionRepository;
-import com.renukiran.repository.ApplicationFormRepository;
 import com.renukiran.repository.BatchRepository;
 import com.renukiran.repository.CandidateAssessmentRepository;
 import com.renukiran.repository.CandidateAttendanceRepository;
@@ -93,7 +92,7 @@ public class AdminDashboardService {
         applications.forEach(applicationForm -> {
 
             applicationForm.getAdmissions().forEach(admission -> {
-                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.TRAINING_COMPLETED ) {
+                if (admission.getStatus() != null && admission.getStatus() == AdmissionStatus.TRAINING_COMPLETED ) {
                     totalPlacementCandidates.getAndIncrement();
                 }
             });
@@ -103,7 +102,7 @@ public class AdminDashboardService {
         applications.forEach(applicationForm -> {
 
             applicationForm.getAdmissions().forEach(admission -> {
-                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.PLACED ) {
+                if (admission.getStatus() != null && admission.getStatus() == AdmissionStatus.PLACED ) {
                     placedCandidates.getAndIncrement();
                 }
             });
@@ -166,8 +165,8 @@ public class AdminDashboardService {
                 .build();
     }
 
-    private ApplicationStatus resolveStatus(ApplicationForm application) {
-        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : ApplicationStatus.NEW;
+    private AdmissionStatus resolveStatus(ApplicationForm application) {
+        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : AdmissionStatus.NEW;
     }
 
     private Map<Long, Integer> buildEnrolledCountByBatchId(List<Admission> admissions) {
@@ -355,7 +354,7 @@ public class AdminDashboardService {
         return Math.round(value * 10.0) / 10.0;
     }
 
-    private String formatStatus(ApplicationStatus status) {
+    private String formatStatus(AdmissionStatus status) {
         return formatEnumName(status.name());
     }
 

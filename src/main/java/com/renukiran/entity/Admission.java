@@ -2,7 +2,7 @@ package com.renukiran.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.renukiran.enums.ApplicationStatus;
+import com.renukiran.enums.AdmissionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +22,7 @@ public class Admission {
     private String admissionNumber;
 
     @Enumerated(EnumType.STRING)
-    private ApplicationStatus status;
+    private AdmissionStatus status;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

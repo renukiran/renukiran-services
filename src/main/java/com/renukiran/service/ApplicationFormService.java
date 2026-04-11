@@ -4,8 +4,6 @@ import com.renukiran.dto.BaseResponse;
 import com.renukiran.entity.APIStatus;
 import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.Admission;
-import com.renukiran.enums.ApplicationStatus;
-import com.renukiran.repository.AdmissionRepository;
 import com.renukiran.repository.ApplicationFormRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +92,7 @@ public class ApplicationFormService {
                 if (admission.getBatch() != null) {
                     if (admission.getBatch().getCourse() != null) {
                         admission.getBatch().getCourse().setBatchesList(null);
+                        admission.getBatch().getCourse().setUsers(null);
                     }
                 }
             } catch (Exception ignore) {

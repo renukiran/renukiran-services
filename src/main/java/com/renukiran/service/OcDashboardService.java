@@ -7,7 +7,7 @@ import com.renukiran.dto.OcUpcomingFollowUpResponse;
 import com.renukiran.entity.Admission;
 import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.CandidateFollowUp;
-import com.renukiran.enums.ApplicationStatus;
+import com.renukiran.enums.AdmissionStatus;
 import com.renukiran.repository.AdmissionRepository;
 import com.renukiran.repository.ApplicationFormRepository;
 import com.renukiran.repository.CandidateFollowUpRepository;
@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +57,7 @@ public class OcDashboardService {
         applications.forEach(applicationForm -> {
 
             applicationForm.getAdmissions().forEach(admission -> {
-                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.TRAINING_COMPLETED ) {
+                if (admission.getStatus() != null && admission.getStatus() == AdmissionStatus.TRAINING_COMPLETED ) {
                     pendingPlacementCount.getAndIncrement();
                 }
             });
@@ -103,8 +102,8 @@ public class OcDashboardService {
                 .build();
     }
 
-    private ApplicationStatus resolveStatus(ApplicationForm application) {
-        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : ApplicationStatus.NEW;
+    private AdmissionStatus resolveStatus(ApplicationForm application) {
+        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : AdmissionStatus.NEW;
     }
 
     private LocalDate resolveCreatedDate(ApplicationForm application) {
@@ -128,7 +127,7 @@ public class OcDashboardService {
         return "Not assigned";
     }
 
-    private String formatStatus(ApplicationStatus status) {
+    private String formatStatus(AdmissionStatus status) {
         return formatEnumName(status.name());
     }
 
