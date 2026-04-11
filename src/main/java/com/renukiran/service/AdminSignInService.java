@@ -36,7 +36,7 @@ public class AdminSignInService {
             return new SignInResponse(false, "Unauthorized access", null, 403);
         }
 
-        if( (request.getUserName().equals(user.getUsername())) || (request.getPassword().equals(user.getPassword())) ){
+        if( !request.getUserName().equals(user.getUsername()) ||  !request.getPassword().equals(user.getPassword()) ){
             return new SignInResponse(false,"Invalid Credentials",null,403);
         }
 
