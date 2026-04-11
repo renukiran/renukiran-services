@@ -1,5 +1,6 @@
 package com.renukiran.service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,10 +32,12 @@ public class UserManagementService {
         return signUpRepository.findAll().stream()
                 .map(user -> {
                     UserManagementResponse res = new UserManagementResponse();
+                    res.setUserId(String.valueOf(user.getId()));
                     res.setName(user.getUsername());
                     res.setEmail(user.getEmail());
                     res.setStatus(user.isActive() ? "ACTIVE" : "INACTIVE");
-                    res.setRole(user.getRole().getName().name());
+                    res.setRole(Objects.nonNull(user.getRole()) ? user.getRole().getName().name() : null);
+                   // res.setDeleted(user.getDeleted());
                     return res;
                 }).collect(Collectors.toList());
     }
@@ -42,11 +45,11 @@ public class UserManagementService {
     public UserResponse createUser(UserRequest dto) {
 
         if (signUpRepository.existsByEmail(dto.getEmail())) {
-            throw new DuplicateResourceException("Email already exists with "+ dto.getEmail(), "EMAIL_EXIST");
+            throw new DuplicateResourceException("Email already exists with " + dto.getEmail(), "EMAIL_EXIST");
         }
 
         Role role = roleRepo.findByName(dto.getRole())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found for "+dto.getRole().name(), "ROLE_NOT_EXIST"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for " + dto.getRole().name(), "ROLE_NOT_EXIST"));
 
         Users user = Users.builder()
                 .username(dto.getFullName())
@@ -68,14 +71,14 @@ public class UserManagementService {
             user.setCourses(new HashSet<>(courses));
         }
 
-            signUpRepository.save(user);
+        signUpRepository.save(user);
 
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .skills(CollectionUtils.isEmpty(user.getCourses())? null : user.getCourses().stream()
+                .skills(CollectionUtils.isEmpty(user.getCourses()) ? null : user.getCourses().stream()
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
                 .active(user.isActive())
@@ -84,5 +87,31 @@ public class UserManagementService {
     }
 
 
+    public void deleteUser(Long id, Long deletedById) {
+        // 🔍 Fetch target user (including deleted check)
+        Users user = signUpRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "USER_NOT_FOUND"));
+        if (Boolean.TRUE.equals(user.getDeleted())) {
+            throw new ResourceNotFoundException("User is already deleted", "USER_ALREADY_DELETED");
+        }
 
+        // 🔍 Fetch actor (who deletes)
+        Users deletedBy = signUpRepository.findById(deletedById)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid deleted By User: "+deletedById, "INVALID_DELETED-BY_USER"));
+
+        if (Boolean.TRUE.equals(deletedBy.getDeleted())) {
+            throw new ResourceNotFoundException("DeletedBy user is inactive: "+deletedById, "INACTIVE_USER");
+        }
+
+        // Prevent self-delete
+        if (id.equals(deletedById)) {
+            throw new ResourceNotFoundException("User cannot delete themselves", "DO_NOT_DELETE_BY_THEMSELVES");
+        }
+
+        user.setDeleted(true);
+        user.setDeletedAt(LocalDateTime.now());
+        user.setDeletedBy(deletedBy);
+        user.setActive(Boolean.FALSE);
+        signUpRepository.save(user);
+    }
 }

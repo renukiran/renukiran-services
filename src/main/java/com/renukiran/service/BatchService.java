@@ -5,11 +5,10 @@ import com.renukiran.dto.BatchResponse;
 import com.renukiran.entity.Batch;
 
 
-import com.renukiran.repository.BatchRepository;
+import com.renukiran.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 import com.renukiran.entity.Course;
 import com.renukiran.entity.Trainer;
@@ -17,11 +16,7 @@ import com.renukiran.exception.BusinessValidationException;
 import com.renukiran.exception.DuplicateResourceException;
 import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.BatchRepository;
-import com.renukiran.repository.CourseRepository;
-import com.renukiran.repository.TrainerRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -32,6 +27,7 @@ public class BatchService {
     private final BatchRepository batchRepository;
     private final CourseRepository courseRepository;
     private final TrainerRepository trainerRepository;
+    private final ApplicationFormRepository applicationFormRepository;
 
 /*
 
@@ -186,8 +182,7 @@ public class BatchService {
         response.setCapacity(batch.getCapacity());
         response.setEndDate(batch.getEndDate());
         response.setStartDate(batch.getStartDate());
+        response.setCandidates(applicationFormRepository.findApplicationFormIdsByBatchId(batch.getId()));
        return response;
     }
-
-
 }

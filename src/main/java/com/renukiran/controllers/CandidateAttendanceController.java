@@ -20,6 +20,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/candidate-attendance")
 @RequiredArgsConstructor
+@Deprecated
 public class CandidateAttendanceController {
 
     private final CandidateAttendanceService candidateAttendanceService;

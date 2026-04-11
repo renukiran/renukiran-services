@@ -2,7 +2,9 @@ package com.renukiran.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,4 +55,13 @@ public class Users {
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
     private Set<Course> courses;
+
+    // soft delete
+    @Builder.Default
+    private Boolean deleted = false;
+    private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_by")
+    private Users deletedBy;
 }
