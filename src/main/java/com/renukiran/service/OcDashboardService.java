@@ -20,6 +20,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,16 +45,24 @@ public class OcDashboardService {
                 .collect(Collectors.toSet());
 
         int newApplicationsCount = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.NEW)
+                .filter(application -> application.getAdmissions() == null || application.getAdmissions().isEmpty())
                 .count();
 
         int underReviewCount = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.NEW)
+                .filter(application -> application.getAdmissions() == null || application.getAdmissions().isEmpty())
                 .count();
 
-        int pendingPlacementCount = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.TRAINING_COMPLETED)
-                .count();
+
+
+        AtomicInteger pendingPlacementCount = new AtomicInteger();
+        applications.forEach(applicationForm -> {
+
+            applicationForm.getAdmissions().forEach(admission -> {
+                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.TRAINING_COMPLETED ) {
+                    pendingPlacementCount.getAndIncrement();
+                }
+            });
+        });
 
         List<OcRecentApplicationResponse> recentApplications = applications.stream()
                 .sorted(Comparator.comparing(this::resolveCreatedDate, Comparator.nullsLast(Comparator.reverseOrder()))
@@ -87,14 +97,14 @@ public class OcDashboardService {
                 .newApplications(OcDashboardMetricResponse.builder().label("New Applications").value(newApplicationsCount).build())
                 .underReview(OcDashboardMetricResponse.builder().label("Under Review").value(underReviewCount).build())
                 .assignedToBatch(OcDashboardMetricResponse.builder().label("Assigned to Batch").value(assignedCandidateIds.size()).build())
-                .pendingPlacement(OcDashboardMetricResponse.builder().label("Pending Placement").value(pendingPlacementCount).build())
+                .pendingPlacement(OcDashboardMetricResponse.builder().label("Pending Placement").value(pendingPlacementCount.get()).build())
                 .recentApplications(recentApplications)
                 .upcomingFollowUps(upcomingFollowUps)
                 .build();
     }
 
     private ApplicationStatus resolveStatus(ApplicationForm application) {
-        return application.getApplicationStatus() != null ? application.getApplicationStatus() : ApplicationStatus.NEW;
+        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : ApplicationStatus.NEW;
     }
 
     private LocalDate resolveCreatedDate(ApplicationForm application) {

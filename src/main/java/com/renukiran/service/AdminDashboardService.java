@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class AdminDashboardService {
     private final CourseRepository courseRepository;
     private final BatchRepository batchRepository;
     private final AdmissionRepository admissionRepository;
-    private final ApplicationFormRepository applicationFormRepository;
+    private final ApplicationFormService applicationFormService;
     private final CandidateAssessmentRepository candidateAssessmentRepository;
     private final CandidateAttendanceRepository candidateAttendanceRepository;
     private final CandidateFollowUpRepository candidateFollowUpRepository;
@@ -55,7 +56,7 @@ public class AdminDashboardService {
         List<Course> courses = courseRepository.findAll();
         List<Batch> batches = batchRepository.findAll();
         List<Admission> admissions = admissionRepository.findAll();
-        List<ApplicationForm> applications = applicationFormRepository.findAll();
+        List<ApplicationForm> applications = applicationFormService.listAll();
         List<CandidateAssessment> assessments = candidateAssessmentRepository.findAll();
         List<CandidateAttendance> attendanceRecords = candidateAttendanceRepository.findAll();
         List<CandidateFollowUp> followUps = candidateFollowUpRepository.findAll();
@@ -70,7 +71,7 @@ public class AdminDashboardService {
         int activeBatchesCount = activeBatches.size();
         int candidatesEnrolled = admissions.size();
         int pendingAssignments = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.NEW)
+                .filter(application -> application.getAdmissions() == null || application.getAdmissions().isEmpty())
                 .count();
 
         int assessedCount = 0;
@@ -88,15 +89,26 @@ public class AdminDashboardService {
             }
         }
 
-        long totalPlacementCandidates = applications.stream()
-                .filter(application -> {
-                    ApplicationStatus status = resolveStatus(application);
-                    return status == ApplicationStatus.PLACED;
-                })
-                .count();
-        long placedCandidates = applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.PLACED)
-                .count();
+        AtomicLong totalPlacementCandidates = new AtomicLong();
+        applications.forEach(applicationForm -> {
+
+            applicationForm.getAdmissions().forEach(admission -> {
+                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.TRAINING_COMPLETED ) {
+                    totalPlacementCandidates.getAndIncrement();
+                }
+            });
+        });
+
+        AtomicLong placedCandidates = new AtomicLong();
+        applications.forEach(applicationForm -> {
+
+            applicationForm.getAdmissions().forEach(admission -> {
+                if (admission.getStatus() != null && admission.getStatus() == ApplicationStatus.PLACED ) {
+                    placedCandidates.getAndIncrement();
+                }
+            });
+        });
+
 
         List<Course> coursesWithRetentionRate = courses.stream()
                 .filter(course -> course.getRetentionRate() != null)
@@ -145,13 +157,17 @@ public class AdminDashboardService {
                 .candidatesEnrolled(buildMetric("Candidates Enrolled", String.valueOf(candidatesEnrolled), null))
                 .pendingAssignments(buildMetric("Pending Assignments", String.valueOf(pendingAssignments), pendingAssignments > 0 ? "Needs attention" : "All clear"))
                 .assessmentPassRate(buildMetric("Assessment Pass Rate", formatPercentage(calculatePercentage(passCount, assessedCount)), assessedCount > 0 ? "From assessed candidates" : null))
-                .placementRate(buildMetric("Placement Rate", formatPercentage(calculatePercentage((int) placedCandidates, (int) totalPlacementCandidates)), totalPlacementCandidates > 0 ? null : "No placement data yet"))
+                .placementRate(buildMetric("Placement Rate", formatPercentage(calculatePercentage((int) placedCandidates.get(), (int) totalPlacementCandidates.get())), totalPlacementCandidates.get() > 0 ? null : "No placement data yet"))
                 .jobRetention(buildMetric("Job Retention", formatPercentage(calculateAverageRetentionRate(coursesWithRetentionRate)), coursesWithRetentionRate.isEmpty() ? "No course retention configured yet" : "Course configured"))
                 .averageAttendance(buildMetric("Avg Attendance", formatPercentage(calculatePercentage((int) presentAttendanceRows, (int) totalAttendanceRows)), totalAttendanceRows > 0 ? null : "No attendance marked yet"))
                 .recentApplications(recentApplications)
                 .batchCapacityOverview(batchCapacityOverview)
                 .attendanceAlerts(attendanceAlerts)
                 .build();
+    }
+
+    private ApplicationStatus resolveStatus(ApplicationForm application) {
+        return application.getAdmissions() != null  && !application.getAdmissions().isEmpty() ?  application.getAdmissions().get(application.getAdmissions().size()-1).getStatus()  : ApplicationStatus.NEW;
     }
 
     private Map<Long, Integer> buildEnrolledCountByBatchId(List<Admission> admissions) {
@@ -231,9 +247,7 @@ public class AdminDashboardService {
         return "Ongoing";
     }
 
-    private ApplicationStatus resolveStatus(ApplicationForm application) {
-        return application.getApplicationStatus() != null ? application.getApplicationStatus() : ApplicationStatus.NEW;
-    }
+
 
     private LocalDate resolveCreatedDate(ApplicationForm application) {
         return application.getCreatedDate();

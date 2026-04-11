@@ -33,10 +33,6 @@ public class ApplicationForm {
 
     private String fullName;
 
-
-    @Enumerated(EnumType.STRING)
-    private ApplicationStatus applicationStatus;
-
     private LocalDate createdDate;
 
     private int age;
@@ -168,9 +164,7 @@ public class ApplicationForm {
 
     @PrePersist
     void prePersist() {
-        if (applicationStatus == null) {
-            applicationStatus = ApplicationStatus.NEW;
-        }
+
         if (createdDate == null) {
             createdDate = LocalDate.now();
         }
