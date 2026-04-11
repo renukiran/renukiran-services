@@ -4,6 +4,7 @@ import com.renukiran.enums.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -22,8 +23,8 @@ public class UserRequest {
 
     private String password;
 
-    @NotEmpty
-    private Set<RoleType> roles;
+    @NotNull
+    private RoleType role;
 
     private List<Long> courseIds;
 }

@@ -10,21 +10,24 @@ public class TrainerCoursesValidator
         implements ConstraintValidator<TrainerMustHaveCourses, UserRequest> {
 
     @Override
-    public boolean isValid(UserRequest request, ConstraintValidatorContext context) {
+    public boolean isValid(UserRequest dto, ConstraintValidatorContext context) {
 
-        if (request.getRoles() == null) return true;
+        if (dto.getRole() == null) return true;
 
-        if (request.getRoles().contains(RoleType.TRAINER)) {
-            if (request.getCourseIds() == null || request.getCourseIds().isEmpty()) {
+        if (dto.getRole() == RoleType.TRAINER) {
+
+            if (dto.getCourseIds() == null || dto.getCourseIds().isEmpty()) {
 
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(
-                        "courseIds required when role is TRAINER"
-                ).addConstraintViolation();
+                                "courseIds required when role is TRAINER"
+                        ).addPropertyNode("courseIds")
+                        .addConstraintViolation();
 
                 return false;
             }
         }
+
         return true;
     }
 }

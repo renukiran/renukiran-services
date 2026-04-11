@@ -9,6 +9,8 @@ import com.renukiran.entity.Course;
 import com.renukiran.entity.Role;
 import com.renukiran.entity.Users;
 import com.renukiran.enums.RoleType;
+import com.renukiran.exception.DuplicateResourceException;
+import com.renukiran.exception.ResourceNotFoundException;
 import com.renukiran.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +34,7 @@ public class UserManagementService {
                     res.setName(user.getUsername());
                     res.setEmail(user.getEmail());
                     res.setStatus(user.isActive() ? "ACTIVE" : "INACTIVE");
-                    res.setRoles(Optional.ofNullable(user.getRoles()).orElse(Collections.emptyList()).stream()
-                            .map(role -> role.getName().name())
-                            .collect(Collectors.toSet()));
+                    res.setRole(user.getRole().getName().name());
                     return res;
                 }).collect(Collectors.toList());
     }
@@ -42,38 +42,33 @@ public class UserManagementService {
     public UserResponse createUser(UserRequest dto) {
 
         if (signUpRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("Email already exists with "+ dto.getEmail(), "EMAIL_EXIST");
         }
 
-        List<Role> roles = dto.getRoles().stream()
-                .map(roleType -> roleRepo.findByName(roleType)
-                        .orElseThrow(() -> new RuntimeException("Role not found")))
-                .collect(Collectors.toList());
+        Role role = roleRepo.findByName(dto.getRole())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for "+dto.getRole().name(), "ROLE_NOT_EXIST"));
 
         Users user = Users.builder()
                 .username(dto.getFullName())
                 .email(dto.getEmail())
                 .phone(dto.getPhone())
                 .password(dto.getPassword())
-                .roles(roles)
-                .userType(roles.get(0).getName().name())
+                .role(role)
+                .userType(role.getName().name().toUpperCase())
                 .build();
 
-        if (dto.getRoles().contains(RoleType.TRAINER)) {
+        if (dto.getRole() == RoleType.TRAINER) {
 
             List<Course> courses = courseRepo.findAllById(dto.getCourseIds());
 
             if (courses.size() != dto.getCourseIds().size()) {
-                throw new RuntimeException("Invalid courseIds");
+                throw new ResourceNotFoundException("Invalid CourseIds", "INVALID_COURSE");
             }
 
             user.setCourses(new HashSet<>(courses));
         }
 
             signUpRepository.save(user);
-
-
-        Set<String> rolesList = user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toSet());
 
         return UserResponse.builder()
                 .id(user.getId())
@@ -84,7 +79,7 @@ public class UserManagementService {
                         .map(Course::getCourseName)
                         .collect(Collectors.toSet()))
                 .active(user.isActive())
-                .userType(String.join(",",rolesList))
+                .userType(user.getUserType())
                 .build();
     }
 

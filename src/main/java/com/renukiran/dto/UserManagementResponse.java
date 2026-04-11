@@ -7,17 +7,17 @@ public class UserManagementResponse {
     private String name;
     private String email;
     private String status;
-    private Set<String> roles;
+    private String role;
 
     // ====== GETTERS ======
     public String getName() { return name; }
     public String getEmail() { return email; }
     public String getStatus() { return status; }
-    public Set<String> getRoles() { return roles; }
+    public String getRoles() { return role; }
 
     // ====== SETTERS ======
     public void setName(String name) { this.name = name; }
     public void setEmail(String email) { this.email = email; }
     public void setStatus(String status) { this.status = status; }
-    public void setRoles(Set<String> roles) { this.roles = roles; }
+    public void setRole(String roles) { this.role = role; }
 }
