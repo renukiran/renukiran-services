@@ -32,11 +32,11 @@ public class AdminSignInService {
         
         Users user = userOptional.get();
         String userType = user.getUserType();
-        if (!"ADMIN".equalsIgnoreCase(userType) || !"TRAINER".equalsIgnoreCase(userType) || !"COORDINATOR".equalsIgnoreCase(userType)) {
+        if (!"ADMIN".equalsIgnoreCase(userType) && !"TRAINER".equalsIgnoreCase(userType) && !"COORDINATOR".equalsIgnoreCase(userType)) {
             return new SignInResponse(false, "Unauthorized access", null, 403);
         }
 
-        if( (request.getUserName() != user.getUsername()) || (request.getPassword() != user.getPassword()) ){
+        if( (request.getUserName().equals(user.getUsername())) || (request.getPassword().equals(user.getPassword())) ){
             return new SignInResponse(false,"Invalid Credentials",null,403);
         }
 
