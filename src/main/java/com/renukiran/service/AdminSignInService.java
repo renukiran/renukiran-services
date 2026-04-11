@@ -31,15 +31,14 @@ public class AdminSignInService {
         }
         
         Users user = userOptional.get();
-
-        if (!"ADMIN".equalsIgnoreCase(user.getUserType())) {
+        String userType = user.getUserType();
+        if (!"ADMIN".equalsIgnoreCase(userType) || !"TRAINER".equalsIgnoreCase(userType) || !"COORDINATOR".equalsIgnoreCase(userType)) {
             return new SignInResponse(false, "Unauthorized access", null, 403);
         }
 
-        // // Check encrypted password
-        // if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-        //     return new SignInResponse(false, "Invalid password", null, 401);
-        // }
+        if( (request.getUserName() != user.getUsername()) || (request.getPassword() != user.getPassword()) ){
+            return new SignInResponse(false,"Invalid Credentials",null,403);
+        }
 
         String fullName = ((user.getFirstName() != null ? user.getFirstName() : "") + " " +
                 (user.getLastName() != null ? user.getLastName() : "")).trim();
@@ -48,6 +47,7 @@ public class AdminSignInService {
         SignInResponse resp = new SignInResponse(true, "Admin login successful", null, 200);
         resp.setUserType(user.getUserType());
         resp.setUserName(fullName);
+        resp.setUserId(user.getId());
         return resp;
     }
 }
