@@ -47,11 +47,11 @@ public class OcDashboardService {
                 .count();
 
         int underReviewCount = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.UNDER_REVIEW)
+                .filter(application -> resolveStatus(application) == ApplicationStatus.NEW)
                 .count();
 
         int pendingPlacementCount = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.PENDING_PLACEMENT)
+                .filter(application -> resolveStatus(application) == ApplicationStatus.TRAINING_COMPLETED)
                 .count();
 
         List<OcRecentApplicationResponse> recentApplications = applications.stream()
@@ -102,8 +102,9 @@ public class OcDashboardService {
     }
 
     private String resolveCourseName(ApplicationForm application) {
-        if (application.getAppliedCourse() != null) {
-            return application.getAppliedCourse().getCourseName();
+        if (application.getAdmissions() != null && !application.getAdmissions().isEmpty() && application.getAdmissions().get(0).getBatch() != null
+                && application.getAdmissions().get(0).getBatch().getCourse() != null) {
+            return application.getAdmissions().get(0).getBatch().getCourse().getCourseName();
         }
         if (application.getPreferredExperienceTrack() != null) {
             return formatEnumName(application.getPreferredExperienceTrack().name());

@@ -70,7 +70,7 @@ public class AdminDashboardService {
         int activeBatchesCount = activeBatches.size();
         int candidatesEnrolled = admissions.size();
         int pendingAssignments = (int) applications.stream()
-                .filter(application -> resolveStatus(application) == ApplicationStatus.SELECTED)
+                .filter(application -> resolveStatus(application) == ApplicationStatus.NEW)
                 .count();
 
         int assessedCount = 0;
@@ -91,7 +91,7 @@ public class AdminDashboardService {
         long totalPlacementCandidates = applications.stream()
                 .filter(application -> {
                     ApplicationStatus status = resolveStatus(application);
-                    return status == ApplicationStatus.PLACED || status == ApplicationStatus.PENDING_PLACEMENT;
+                    return status == ApplicationStatus.PLACED;
                 })
                 .count();
         long placedCandidates = applications.stream()
@@ -240,8 +240,10 @@ public class AdminDashboardService {
     }
 
     private String resolveCourseName(ApplicationForm application) {
-        if (application.getAppliedCourse() != null) {
-            return application.getAppliedCourse().getCourseName();
+        if (application.getAdmissions() != null && !application.getAdmissions().isEmpty()
+                && application.getAdmissions().get(0).getBatch() != null
+                && application.getAdmissions().get(0).getBatch().getCourse() != null) {
+            return application.getAdmissions().get(0).getBatch().getCourse().getCourseName();
         }
         if (application.getPreferredExperienceTrack() != null) {
             return formatEnumName(application.getPreferredExperienceTrack().name());

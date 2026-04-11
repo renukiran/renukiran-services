@@ -31,20 +31,4 @@ public class Admission {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Batch batch;
 
-    // Explicit getters/setters to help static analysis and ensure availability even if Lombok isn't processed
-    public ApplicationForm getCandidate() {
-        return candidate;
-    }
-
-    public void setCandidate(ApplicationForm candidate) {
-        this.candidate = candidate;
-    }
-
-    public Batch getBatch() {
-        return batch;
-    }
-
-    public void setBatch(Batch batch) {
-        this.batch = batch;
-    }
 }
