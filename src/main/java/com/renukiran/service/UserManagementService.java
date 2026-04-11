@@ -100,7 +100,7 @@ public class UserManagementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid deleted By User: "+deletedById, "INVALID_DELETED-BY_USER"));
 
         if (Boolean.TRUE.equals(deletedBy.getDeleted())) {
-            throw new ResourceNotFoundException("DeletedBy user is inactive", "INACTIVE_USER");
+            throw new ResourceNotFoundException("DeletedBy user is inactive: "+deletedById, "INACTIVE_USER");
         }
 
         // Prevent self-delete
