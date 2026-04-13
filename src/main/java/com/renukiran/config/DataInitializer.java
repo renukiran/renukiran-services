@@ -50,6 +50,36 @@ public class DataInitializer {
                 log.info("[DataInitializer] Temporary admin '{}' seeded.", tempUsername);
             }
 
+                        final String coordinatorUsername = "TempCoordinator";
+                        if (!signUpRepository.existsByUsername(coordinatorUsername)) {
+                                signUpRepository.save(Users.builder()
+                                                .username(coordinatorUsername)
+                                                .password("Coordinator@1234")
+                                                .email("tempCoordinator@renukiran.com")
+                                                .phone("+910000000001")
+                                                .firstName("Temp")
+                                                .lastName("Coordinator")
+                                                .skills(Set.of("Coordination"))
+                                                .userType("COORDINATOR")
+                                                .build());
+                                log.info("[DataInitializer] Temporary coordinator '{}' seeded.", coordinatorUsername);
+                        }
+
+                        final String trainerUsername = "TempTrainer";
+                        if (!signUpRepository.existsByUsername(trainerUsername)) {
+                                signUpRepository.save(Users.builder()
+                                                .username(trainerUsername)
+                                                .password("Trainer@1234")
+                                                .email("tempTrainer@renukiran.com")
+                                                .phone("+910000000002")
+                                                .firstName("Temp")
+                                                .lastName("Trainer")
+                                                .skills(Set.of("Training"))
+                                                .userType("TRAINER")
+                                                .build());
+                                log.info("[DataInitializer] Temporary trainer '{}' seeded.", trainerUsername);
+                        }
+
             // ── Courses ───────────────────────────────────────────────────────
             if (courseRepository.count() == 0) {
                 List<Course> courses = List.of(

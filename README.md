@@ -1,3 +1,23 @@
+# renukiran-services
+
+## Local Run
+
+The backend runs on `http://localhost:8080` by default and uses the PostgreSQL datasource configured in `src/main/resources/application.properties`.
+
+### Prerequisites
+
+- Java 17+
+
+### Start
+
+```powershell
+.\gradlew.bat bootRun
+```
+
+### API docs
+
+After startup, OpenAPI docs are available at `http://localhost:8080/v3/api-docs`.
+
 # 🔐 Admin Authentication API Documentation
 
 This document describes the authentication flow for **Admin users** in the system.

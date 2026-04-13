@@ -1,5 +1,6 @@
 package com.renukiran.controllers;
 
+import com.renukiran.dto.ApplicationStatsResponse;
 import com.renukiran.dto.BaseResponse;
 import com.renukiran.entity.APIStatus;
 import com.renukiran.entity.ApplicationForm;
@@ -42,6 +43,11 @@ public class ApplicationFormController {
         response.setStatus(APIStatus.SUCCESS);
         response.setData(service.listAll());
         return response;
+    }
+
+    @GetMapping("/stats")
+    public BaseResponse<ApplicationStatsResponse> stats() {
+        return service.getStats();
     }
 
     @GetMapping("/{id}")

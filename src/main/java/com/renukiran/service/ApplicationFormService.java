@@ -1,9 +1,11 @@
 package com.renukiran.service;
 
+import com.renukiran.dto.ApplicationStatsResponse;
 import com.renukiran.dto.BaseResponse;
 import com.renukiran.entity.APIStatus;
 import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.Admission;
+import com.renukiran.enums.AdmissionStatus;
 import com.renukiran.repository.ApplicationFormRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -23,6 +27,7 @@ public class ApplicationFormService {
     @Autowired
     private ApplicationFormRepository repository;
 
+    @Autowired
     private AdmissionService admissionService;
 
     public ApplicationForm create(ApplicationForm form) {
@@ -58,6 +63,32 @@ public class ApplicationFormService {
         List<ApplicationForm> updatedForms = repository.findAll();
         updatedForms.forEach(ApplicationFormService::removeNestedObjects);
         return updatedForms;
+    }
+
+    public BaseResponse<ApplicationStatsResponse> getStats() {
+        List<ApplicationForm> forms = listAll();
+        LocalDate today = LocalDate.now();
+
+        long createdToday = forms.stream()
+                .filter(form -> today.equals(form.getCreatedDate()))
+                .count();
+
+        BaseResponse<ApplicationStatsResponse> response = new BaseResponse<>();
+        response.setStatus(APIStatus.SUCCESS);
+        response.setData(ApplicationStatsResponse.builder()
+                .totalApplications(forms.size())
+                .createdToday(createdToday)
+                .draftCount(0)
+                .newCount(countNewApplications(forms))
+                .underReviewCount(0)
+                .selectedCount(0)
+                .assignedToBatchCount(countByHighestAdmissionStatus(forms, AdmissionStatus.ASSIGNED_TO_BATCH))
+                .trainingCount(countByHighestAdmissionStatus(forms, AdmissionStatus.TRAINING_STARTED))
+                .pendingPlacementCount(countByHighestAdmissionStatus(forms, AdmissionStatus.TRAINING_COMPLETED))
+                .placedCount(countByHighestAdmissionStatus(forms, AdmissionStatus.PLACED))
+                .notPlacedCount(0)
+                .build());
+        return response;
     }
 
     public BaseResponse<ApplicationForm> getById(Long id) {
@@ -148,6 +179,33 @@ public class ApplicationFormService {
             }
         });
 
+    }
+
+    private long countNewApplications(List<ApplicationForm> forms) {
+        return forms.stream()
+                .filter(form -> {
+                    AdmissionStatus highestStatus = resolveHighestAdmissionStatus(form);
+                    return highestStatus == null || highestStatus == AdmissionStatus.NEW;
+                })
+                .count();
+    }
+
+    private long countByHighestAdmissionStatus(List<ApplicationForm> forms, AdmissionStatus status) {
+        return forms.stream()
+                .filter(form -> resolveHighestAdmissionStatus(form) == status)
+                .count();
+    }
+
+    private AdmissionStatus resolveHighestAdmissionStatus(ApplicationForm form) {
+        if (form == null || form.getAdmissions() == null || form.getAdmissions().isEmpty()) {
+            return null;
+        }
+
+        return form.getAdmissions().stream()
+                .map(Admission::getStatus)
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingInt(Enum::ordinal))
+                .orElse(null);
     }
 
 
