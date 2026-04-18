@@ -14,6 +14,7 @@ public class SignInResponse {
     private String userType;
     private String userName;
     private Long userID;
+    private Long trainerId;
 
     public SignInResponse() {
     }
@@ -79,6 +80,14 @@ public class SignInResponse {
 
     public Long getUserID(){
         return userID;
+    }
+
+    public Long getTrainerId() {
+        return trainerId;
+    }
+
+    public void setTrainerId(Long trainerId) {
+        this.trainerId = trainerId;
     }
 }
 

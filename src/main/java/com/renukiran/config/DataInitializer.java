@@ -66,19 +66,21 @@ public class DataInitializer {
                         }
 
                         final String trainerUsername = "TempTrainer";
-                        if (!signUpRepository.existsByUsername(trainerUsername)) {
-                                signUpRepository.save(Users.builder()
-                                                .username(trainerUsername)
-                                                .password("Trainer@1234")
-                                                .email("tempTrainer@renukiran.com")
-                                                .phone("+910000000002")
-                                                .firstName("Temp")
-                                                .lastName("Trainer")
-                                                .skills(Set.of("Training"))
-                                                .userType("TRAINER")
-                                                .build());
-                                log.info("[DataInitializer] Temporary trainer '{}' seeded.", trainerUsername);
-                        }
+                        Users trainerUser = signUpRepository.findByUsername(trainerUsername)
+                                        .orElseGet(() -> {
+                                                Users savedUser = signUpRepository.save(Users.builder()
+                                                                .username(trainerUsername)
+                                                                .password("Trainer@1234")
+                                                                .email("tempTrainer@renukiran.com")
+                                                                .phone("+910000000002")
+                                                                .firstName("Temp")
+                                                                .lastName("Trainer")
+                                                                .skills(Set.of("Training"))
+                                                                .userType("TRAINER")
+                                                                .build());
+                                                log.info("[DataInitializer] Temporary trainer '{}' seeded.", trainerUsername);
+                                                return savedUser;
+                                        });
 
             // ── Courses ───────────────────────────────────────────────────────
             if (courseRepository.count() == 0) {
@@ -94,11 +96,12 @@ public class DataInitializer {
 
             // ── Trainers ──────────────────────────────────────────────────────
             if (trainerRepository.count() == 0) {
-                for (String name : List.of("Suman Kumar", "Raj Patel", "Asha Mehra", "Priya T.")) {
-                    Trainer t = new Trainer();
-                    t.setName(name);
-                    trainerRepository.save(t);
-                }
+                                trainerRepository.saveAll(List.of(
+                                        buildTrainer("Suman Kumar", null),
+                                        buildTrainer("Raj Patel", null),
+                                        buildTrainer("Asha Mehra", trainerUser.getId()),
+                                        buildTrainer("Priya T.", null)
+                                ));
                 log.info("[DataInitializer] Trainers seeded.");
             }
 
@@ -174,4 +177,11 @@ public class DataInitializer {
             }
         };
     }
+
+        private Trainer buildTrainer(String name, Long userId) {
+                Trainer trainer = new Trainer();
+                trainer.setName(name);
+                trainer.setUserId(userId);
+                return trainer;
+        }
 }

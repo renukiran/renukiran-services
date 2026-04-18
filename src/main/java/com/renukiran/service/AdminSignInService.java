@@ -2,8 +2,10 @@ package com.renukiran.service;
 
 import com.renukiran.dto.SignInRequest;
 import com.renukiran.dto.SignInResponse;
+import com.renukiran.entity.Trainer;
 import com.renukiran.entity.Users;
 import com.renukiran.repository.SignUpRepository;
+import com.renukiran.repository.TrainerRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,9 @@ public class AdminSignInService {
 
     @Autowired
     private SignUpRepository signUpRepository;
+
+    @Autowired
+    private TrainerRepository trainerRepository;
 
     public SignInResponse signIn(SignInRequest request) {
 
@@ -48,6 +53,24 @@ public class AdminSignInService {
         resp.setUserType(user.getUserType());
         resp.setUserName(fullName);
         resp.setUserId(user.getId());
+        resolveTrainer(user, fullName)
+                .map(Trainer::getTrainerId)
+                .ifPresent(resp::setTrainerId);
         return resp;
+    }
+
+    private Optional<Trainer> resolveTrainer(Users user, String fullName) {
+        if (user.getId() != null) {
+            Optional<Trainer> trainerByUserId = trainerRepository.findByUserId(user.getId());
+            if (trainerByUserId.isPresent()) {
+                return trainerByUserId;
+            }
+        }
+
+        if (fullName != null && !fullName.isBlank()) {
+            return trainerRepository.findFirstByNameIgnoreCase(fullName);
+        }
+
+        return Optional.empty();
     }
 }

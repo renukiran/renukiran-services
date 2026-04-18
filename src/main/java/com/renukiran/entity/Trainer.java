@@ -1,5 +1,6 @@
 package com.renukiran.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,4 +14,7 @@ public class Trainer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long trainerId;
     private String name;
+
+    @Column(name = "user_id")
+    private Long userId;
 }
