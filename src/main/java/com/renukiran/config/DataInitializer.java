@@ -11,11 +11,13 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Seeds a temporary admin account and sample data into the in-memory H2 database
- * on every startup.
+ * Seeds local development accounts and sample data into the local H2 database.
+ * Records are inserted only when missing so the file-backed local profile keeps
+ * user-created changes across restarts.
  *
  * ⚠️  FOR DEVELOPMENT/TESTING ONLY. Remove or replace before moving to production.
  */
@@ -34,95 +36,44 @@ public class DataInitializer {
     @Bean
     CommandLineRunner seedTempAdmin() {
         return args -> {
-            // ── Admin User ────────────────────────────────────────────────────
-            final String tempUsername = "TempAdmin";
-            if (!signUpRepository.existsByUsername(tempUsername)) {
-                signUpRepository.save(Users.builder()
-                        .username(tempUsername)
-                        .password("Admin@1234")
-                        .email("tempAdmin@renukiran.com")
-                        .phone("+910000000000")
-                        .firstName("Temp")
-                        .lastName("Admin")
-                        .skills(Set.of("Administration"))
-                        .userType("ADMIN")
-                        .build());
-                log.info("[DataInitializer] Temporary admin '{}' seeded.", tempUsername);
-            }
-
-                        final String coordinatorUsername = "TempCoordinator";
-                        if (!signUpRepository.existsByUsername(coordinatorUsername)) {
-                                signUpRepository.save(Users.builder()
-                                                .username(coordinatorUsername)
-                                                .password("Coordinator@1234")
-                                                .email("tempCoordinator@renukiran.com")
-                                                .phone("+910000000001")
-                                                .firstName("Temp")
-                                                .lastName("Coordinator")
-                                                .skills(Set.of("Coordination"))
-                                                .userType("COORDINATOR")
-                                                .build());
-                                log.info("[DataInitializer] Temporary coordinator '{}' seeded.", coordinatorUsername);
-                        }
-
-                        final String trainerUsername = "TempTrainer";
-                        Users trainerUser = signUpRepository.findByUsername(trainerUsername)
-                                        .orElseGet(() -> {
-                                                Users savedUser = signUpRepository.save(Users.builder()
-                                                                .username(trainerUsername)
-                                                                .password("Trainer@1234")
-                                                                .email("tempTrainer@renukiran.com")
-                                                                .phone("+910000000002")
-                                                                .firstName("Temp")
-                                                                .lastName("Trainer")
-                                                                .skills(Set.of("Training"))
-                                                                .userType("TRAINER")
-                                                                .build());
-                                                log.info("[DataInitializer] Temporary trainer '{}' seeded.", trainerUsername);
-                                                return savedUser;
-                                        });
+            // ── Users ─────────────────────────────────────────────────────────
+            ensureUser("TempAdmin", "Admin@1234", "tempAdmin@renukiran.com", "+910000000000",
+                    "Temp", "Admin", Set.of("Administration"), "ADMIN");
+            ensureUser("TempCoordinator", "Coordinator@1234", "tempCoordinator@renukiran.com", "+910000000001",
+                    "Temp", "Coordinator", Set.of("Coordination"), "COORDINATOR");
+            Users trainerUser = ensureUser("TempTrainer", "Trainer@1234", "tempTrainer@renukiran.com", "+910000000002",
+                    "Temp", "Trainer", Set.of("Training"), "TRAINER");
+            Users sanjayTrainerUser = ensureUser("sanjaymalik264179", "Trainer@1234", "sanjay.malik.264179@rwf.org", "+919543210876",
+                    "Sanjay", "Malik", Set.of("Beauty", "Stitching"), "TRAINER");
 
             // ── Courses ───────────────────────────────────────────────────────
-            if (courseRepository.count() == 0) {
-                List<Course> courses = List.of(
-                    Course.builder().courseName("Stitching Basic").instructor("Suman Kumar").durationMonths(3).maxBatchSize(20).category("Vocational").status("Active").build(),
-                    Course.builder().courseName("Computer Fundamentals").instructor("Raj Patel").durationMonths(3).maxBatchSize(20).category("Technical").status("Active").build(),
-                    Course.builder().courseName("Beauty Basic").instructor("Asha Mehra").durationMonths(3).maxBatchSize(20).category("Vocational").status("Active").build(),
-                    Course.builder().courseName("Food Enterprise").instructor("Suman Kumar").durationMonths(3).maxBatchSize(20).category("Entrepreneurship").status("Active").build()
-                );
-                courseRepository.saveAll(courses);
-                log.info("[DataInitializer] {} courses seeded.", courses.size());
-            }
+            Course stitchingBasic = ensureCourse("Stitching Basic", "Suman Kumar", 3, 20, "Vocational",
+                    null, "30", "50", "20", 50, "Active");
+            Course computerFundamentals = ensureCourse("Computer Fundamentals", "Raj Patel", 3, 20, "Technical",
+                    null, "40", "40", "20", 50, "Active");
+            Course beautyBasic = ensureCourse("Beauty Basic", "Asha Mehra", 3, 20, "Vocational",
+                    null, "30", "50", "20", 50, "Active");
+            ensureCourse("Food Enterprise", "Suman Kumar", 3, 20, "Entrepreneurship",
+                    null, "25", "55", "20", 50, "Active");
+            Course beautyIntensive = ensureCourse("Beauty Intensive 264179", "Asha Mehra", 4, 18, "Beauty",
+                    "Salon, customer service, and income planning for neighbourhood women.", "30", "50", "20", 50, "Active");
 
             // ── Trainers ──────────────────────────────────────────────────────
-            if (trainerRepository.count() == 0) {
-                                trainerRepository.saveAll(List.of(
-                                        buildTrainer("Suman Kumar", null),
-                                        buildTrainer("Raj Patel", null),
-                                        buildTrainer("Asha Mehra", trainerUser.getId()),
-                                        buildTrainer("Priya T.", null)
-                                ));
-                log.info("[DataInitializer] Trainers seeded.");
-            }
+            Trainer sumanTrainer = ensureTrainer("Suman Kumar", null);
+            Trainer rajTrainer = ensureTrainer("Raj Patel", null);
+            Trainer ashaTrainer = ensureTrainer("Asha Mehra", trainerUser.getId());
+            ensureTrainer("Priya T.", null);
+            ensureTrainer("Sanjay Malik", sanjayTrainerUser.getId());
 
             // ── Batches ───────────────────────────────────────────────────────
-            if (batchRepository.count() == 0 && courseRepository.count() > 0 && trainerRepository.count() > 0) {
-                List<Course> courses = courseRepository.findAll();
-                List<Trainer> trainers = trainerRepository.findAll();
-                List<Batch> batches = List.of(
-                    Batch.builder().batchName("Stitching Basic Jan-Mar 2026").course(courses.get(0))
-                            .trainer(trainers.get(0)).startDate(LocalDate.of(2026,1,1))
-                            .endDate(LocalDate.of(2026,3,31)).capacity(20).build(),
-                    Batch.builder().batchName("Computer Fund Jan-Apr 2026").course(courses.get(1))
-                            .trainer(trainers.get(1)).startDate(LocalDate.of(2026,1,15))
-                            .endDate(LocalDate.of(2026,4,15)).capacity(20).build(),
-                    Batch.builder().batchName("Beauty Basic Apr-Jul 2026").course(courses.get(2))
-                            .trainer(trainers.get(2)).startDate(LocalDate.of(2026,4,1))
-                            .endDate(LocalDate.of(2026,7,31)).capacity(20).build()
-                );
-                batchRepository.saveAll(batches);
-                log.info("[DataInitializer] {} batches seeded.", batches.size());
-            }
+            ensureBatch("Stitching Basic Jan-Mar 2026", stitchingBasic, sumanTrainer,
+                    LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31), 20);
+            ensureBatch("Computer Fund Jan-Apr 2026", computerFundamentals, rajTrainer,
+                    LocalDate.of(2026, 1, 15), LocalDate.of(2026, 4, 15), 20);
+            ensureBatch("Beauty Basic Apr-Jul 2026", beautyBasic, ashaTrainer,
+                    LocalDate.of(2026, 4, 1), LocalDate.of(2026, 7, 31), 20);
+            ensureBatch("Beauty Morning 264179", beautyIntensive, ashaTrainer,
+                    LocalDate.of(2026, 4, 20), LocalDate.of(2026, 8, 20), 18);
 
             // ── Placements ────────────────────────────────────────────────────
             if (placementRepository.count() == 0) {
@@ -177,6 +128,116 @@ public class DataInitializer {
             }
         };
     }
+
+        private Users ensureUser(String username, String password, String email, String phone,
+                                                         String firstName, String lastName, Set<String> skills, String userType) {
+                return signUpRepository.findByUsername(username)
+                                .orElseGet(() -> {
+                                        Users savedUser = signUpRepository.save(Users.builder()
+                                                        .username(username)
+                                                        .password(password)
+                                                        .email(email)
+                                                        .phone(phone)
+                                                        .firstName(firstName)
+                                                        .lastName(lastName)
+                                                        .skills(skills)
+                                                        .userType(userType)
+                                                        .build());
+                                        log.info("[DataInitializer] User '{}' seeded.", username);
+                                        return savedUser;
+                                });
+        }
+
+        private Course ensureCourse(String courseName, String instructor, Integer durationMonths, Integer maxBatchSize,
+                                                                String category, String description, String mcqAssessment,
+                                                                String practicalAssessment, String caseStudyAssessment,
+                                                                Integer passThreshold, String status) {
+                return courseRepository.findFirstByCourseNameIgnoreCase(courseName)
+                                .orElseGet(() -> {
+                                        Course savedCourse = courseRepository.save(Course.builder()
+                                                        .courseName(courseName)
+                                                        .instructor(instructor)
+                                                        .durationMonths(durationMonths)
+                                                        .maxBatchSize(maxBatchSize)
+                                                        .category(category)
+                                                        .description(description)
+                                                        .mcqAssessment(mcqAssessment)
+                                                        .practicalAssessment(practicalAssessment)
+                                                        .caseStudyAssessment(caseStudyAssessment)
+                                                        .passThreshold(passThreshold)
+                                                        .status(status)
+                                                        .build());
+                                        log.info("[DataInitializer] Course '{}' seeded.", courseName);
+                                        return savedCourse;
+                                });
+        }
+
+        private Trainer ensureTrainer(String name, Long userId) {
+                return trainerRepository.findFirstByNameIgnoreCase(name)
+                                .map(existingTrainer -> {
+                                        if (!Objects.equals(existingTrainer.getUserId(), userId)) {
+                                                existingTrainer.setUserId(userId);
+                                                Trainer savedTrainer = trainerRepository.save(existingTrainer);
+                                                log.info("[DataInitializer] Trainer '{}' linked to local user {}.", name, userId);
+                                                return savedTrainer;
+                                        }
+                                        return existingTrainer;
+                                })
+                                .orElseGet(() -> {
+                                        Trainer savedTrainer = trainerRepository.save(buildTrainer(name, userId));
+                                        log.info("[DataInitializer] Trainer '{}' seeded.", name);
+                                        return savedTrainer;
+                                });
+        }
+
+        private Batch ensureBatch(String batchName, Course course, Trainer trainer,
+                                                          LocalDate startDate, LocalDate endDate, Integer capacity) {
+                return batchRepository.findByBatchName(batchName)
+                                .map(existingBatch -> {
+                                        boolean changed = false;
+
+                                        if (!Objects.equals(existingBatch.getCourse().getCourseId(), course.getCourseId())) {
+                                                existingBatch.setCourse(course);
+                                                changed = true;
+                                        }
+                                        if (!Objects.equals(existingBatch.getTrainer().getTrainerId(), trainer.getTrainerId())) {
+                                                existingBatch.setTrainer(trainer);
+                                                changed = true;
+                                        }
+                                        if (!Objects.equals(existingBatch.getStartDate(), startDate)) {
+                                                existingBatch.setStartDate(startDate);
+                                                changed = true;
+                                        }
+                                        if (!Objects.equals(existingBatch.getEndDate(), endDate)) {
+                                                existingBatch.setEndDate(endDate);
+                                                changed = true;
+                                        }
+                                        if (!Objects.equals(existingBatch.getCapacity(), capacity)) {
+                                                existingBatch.setCapacity(capacity);
+                                                changed = true;
+                                        }
+
+                                        if (!changed) {
+                                                return existingBatch;
+                                        }
+
+                                        Batch savedBatch = batchRepository.save(existingBatch);
+                                        log.info("[DataInitializer] Batch '{}' refreshed.", batchName);
+                                        return savedBatch;
+                                })
+                                .orElseGet(() -> {
+                                        Batch savedBatch = batchRepository.save(Batch.builder()
+                                                        .batchName(batchName)
+                                                        .course(course)
+                                                        .trainer(trainer)
+                                                        .startDate(startDate)
+                                                        .endDate(endDate)
+                                                        .capacity(capacity)
+                                                        .build());
+                                        log.info("[DataInitializer] Batch '{}' seeded.", batchName);
+                                        return savedBatch;
+                                });
+        }
 
         private Trainer buildTrainer(String name, Long userId) {
                 Trainer trainer = new Trainer();

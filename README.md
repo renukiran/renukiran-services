@@ -2,7 +2,23 @@
 
 ## Local Run
 
-The backend runs on `http://localhost:8080` by default and uses the PostgreSQL datasource configured in `src/main/resources/application.properties`.
+The backend runs on `http://localhost:8080` by default.
+
+### Default profile
+
+Without extra arguments, the backend uses the datasource configured in `src/main/resources/application.properties`.
+
+### Local H2 profile
+
+For local UI smoke tests and development, run the backend with the `local` profile:
+
+```powershell
+.\gradlew.bat bootRun --args='--spring.profiles.active=local'
+```
+
+The `local` profile uses a file-backed H2 database at `renukiran-services/data/renukiran-local`, so data now persists across backend restarts. Delete the `data/` folder if you want a clean reset.
+
+This profile also seeds baseline development data only when records are missing, including the smoke-demo trainer account `Sanjay Malik`, the course `Beauty Intensive 264179`, and the batch `Beauty Morning 264179`.
 
 ### Prerequisites
 
@@ -26,16 +42,16 @@ This document describes the authentication flow for **Admin users** in the syste
 
 ## 📌 Overview
 
-* The application uses an **in-memory (runtime) database**.
-* All registered users are **lost after server restart**.
+* The `local` profile uses a **file-backed H2 database**.
+* Local data is **preserved across server restarts** until you delete `renukiran-services/data/`.
 * Authentication token support is **not yet implemented** (`token` is currently `null`).
-* A **temporary admin account** is automatically seeded into the database on every startup (see below).
+* Development seed data is inserted **only when missing** (see below).
 
 ---
 
 ## 🧪 Temporary Admin Login (Auto-Seeded)
 
-> ⚠️ **FOR DEVELOPMENT / TESTING ONLY.** These credentials are inserted automatically by `DataInitializer` every time the server starts. Remove `DataInitializer.java` before deploying to production.
+> ⚠️ **FOR DEVELOPMENT / TESTING ONLY.** These credentials are inserted automatically by `DataInitializer` when missing. Remove `DataInitializer.java` before deploying to production.
 
 | Field    | Value                      |
 | -------- | -------------------------- |
@@ -72,7 +88,7 @@ POST /auth/admin
 }
 ```
 
-You can also inspect the seeded data via the H2 console at **`http://localhost:8080/h2-console`** (JDBC URL: `jdbc:h2:mem:RKDB`, username: `sa`, password: `password`).
+You can also inspect the seeded data via the H2 console at **`http://localhost:8080/h2-console`** (JDBC URL: `jdbc:h2:file:./data/renukiran-local`, username: `sa`, password: blank).
 
 ---
 
@@ -112,7 +128,7 @@ If the admin user does not exist in the database, the system returns a **404 Not
 
 ## 2️⃣ Register Admin
 
-> ⚠️ Since the application uses a runtime database, you must register the admin before attempting login.
+> ⚠️ This only applies when you are not using the seeded local H2 profile data.
 
 ### **Endpoint**
 
