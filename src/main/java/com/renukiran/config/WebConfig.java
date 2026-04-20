@@ -10,9 +10,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // allow any localhost origin on any port and common loopbacks
+                // allow the production frontend host (exact) and any localhost origin on any port
                 .allowedOriginPatterns(
-                        "https://renukiran-ui.onrender.com:*",
+                        "https://renukiran-ui.onrender.com",
                         "http://localhost:*",
                         "https://localhost:*",
                         "http://127.0.0.1:*",
