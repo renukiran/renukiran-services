@@ -12,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 // allow any localhost origin on any port and common loopbacks
                 .allowedOriginPatterns(
+                        "https://renukiran-ui.onrender.com:*",
                         "http://localhost:*",
                         "https://localhost:*",
                         "http://127.0.0.1:*",
