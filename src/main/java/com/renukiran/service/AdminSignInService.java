@@ -2,10 +2,8 @@ package com.renukiran.service;
 
 import com.renukiran.dto.SignInRequest;
 import com.renukiran.dto.SignInResponse;
-import com.renukiran.entity.Trainer;
 import com.renukiran.entity.Users;
 import com.renukiran.repository.SignUpRepository;
-import com.renukiran.repository.TrainerRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +17,7 @@ public class AdminSignInService {
     private SignUpRepository signUpRepository;
 
     @Autowired
-    private TrainerRepository trainerRepository;
+    private SignUpRepository trainerRepository;
 
     public SignInResponse signIn(SignInRequest request) {
 
@@ -54,22 +52,22 @@ public class AdminSignInService {
         resp.setUserName(fullName);
         resp.setUserId(user.getId());
         resolveTrainer(user, fullName)
-                .map(Trainer::getTrainerId)
+                .map(Users::getId)
                 .ifPresent(resp::setTrainerId);
         return resp;
     }
 
-    private Optional<Trainer> resolveTrainer(Users user, String fullName) {
+    private Optional<Users> resolveTrainer(Users user, String fullName) {
         if (user.getId() != null) {
-            Optional<Trainer> trainerByUserId = trainerRepository.findByUserId(user.getId());
+            Optional<Users> trainerByUserId = trainerRepository.findById(user.getId());
             if (trainerByUserId.isPresent()) {
                 return trainerByUserId;
             }
         }
 
-        if (fullName != null && !fullName.isBlank()) {
-            return trainerRepository.findFirstByNameIgnoreCase(fullName);
-        }
+//        if (fullName != null && !fullName.isBlank()) {
+//            return trainerRepository.findFirstByNameIgnoreCase(fullName);
+//        }
 
         return Optional.empty();
     }

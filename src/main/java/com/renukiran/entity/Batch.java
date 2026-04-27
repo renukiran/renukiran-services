@@ -26,7 +26,7 @@ public class Batch {
     private Course course;
     @ManyToOne
     @JoinColumn(name = "trainer_id", nullable = false)
-    private Trainer trainer;
+    private Users trainer;
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
     @Column(name = "end_date", nullable = false)

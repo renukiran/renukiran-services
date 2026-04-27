@@ -3,17 +3,10 @@ package com.renukiran.service;
 import com.renukiran.dto.TrainerBatchCardResponse;
 import com.renukiran.dto.TrainerDashboardResponse;
 import com.renukiran.dto.TrainerBatchLowAttendanceAlertResponse;
-import com.renukiran.entity.Admission;
-import com.renukiran.entity.ApplicationForm;
-import com.renukiran.entity.Batch;
-import com.renukiran.entity.CandidateAttendance;
-import com.renukiran.entity.Trainer;
+import com.renukiran.entity.*;
 import com.renukiran.enums.CandidateAttendanceStatus;
 import com.renukiran.exception.ResourceNotFoundException;
-import com.renukiran.repository.AdmissionRepository;
-import com.renukiran.repository.BatchRepository;
-import com.renukiran.repository.CandidateAttendanceRepository;
-import com.renukiran.repository.TrainerRepository;
+import com.renukiran.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,19 +22,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TrainerDashboardService {
 
-    private final TrainerRepository trainerRepository;
+    private final SignUpRepository userRepository;
     private final BatchRepository batchRepository;
     private final AdmissionRepository admissionRepository;
     private final CandidateAttendanceRepository candidateAttendanceRepository;
 
     @Transactional(readOnly = true)
     public TrainerDashboardResponse getDashboard(Long trainerId) {
-        Trainer trainer = trainerRepository.findById(trainerId)
+        Users trainer = userRepository.findById(trainerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found", "TRAINER_NOT_FOUND"));
 
         LocalDate today = LocalDate.now();
         List<Batch> activeBatches = batchRepository.findAll().stream()
-                .filter(batch -> batch.getTrainer() != null && trainerId.equals(batch.getTrainer().getTrainerId()))
+                .filter(batch -> batch.getTrainer() != null && trainerId.equals(batch.getTrainer().getId()))
                 .filter(batch -> !batch.getStartDate().isAfter(today) && !batch.getEndDate().isBefore(today))
                 .sorted((first, second) -> {
                     int startDateComparison = first.getStartDate().compareTo(second.getStartDate());
@@ -56,7 +48,7 @@ public class TrainerDashboardService {
         List<Admission> admissions = admissionRepository.findAll().stream()
                 .filter(admission -> admission.getBatch() != null)
                 .filter(admission -> admission.getBatch().getTrainer() != null)
-                .filter(admission -> trainerId.equals(admission.getBatch().getTrainer().getTrainerId()))
+                .filter(admission -> trainerId.equals(admission.getBatch().getTrainer().getId()))
                 .toList();
 
         Map<Long, Long> batchEnrollmentCounts = admissions.stream()
@@ -65,12 +57,12 @@ public class TrainerDashboardService {
         List<CandidateAttendance> attendanceRecords = candidateAttendanceRepository.findAll().stream()
                 .filter(attendance -> attendance.getBatch() != null)
                 .filter(attendance -> attendance.getBatch().getTrainer() != null)
-                .filter(attendance -> trainerId.equals(attendance.getBatch().getTrainer().getTrainerId()))
+                .filter(attendance -> trainerId.equals(attendance.getBatch().getTrainer().getId()))
                 .toList();
 
         return TrainerDashboardResponse.builder()
-                .trainerId(trainer.getTrainerId())
-                .trainerName(trainer.getName())
+                .trainerId(trainer.getId())
+                .trainerName(trainer.getFirstName() + " " + trainer.getLastName())
                 .generatedOn(today)
                 .activeBatches(activeBatches.stream()
                         .map(batch -> mapBatchCard(batch, today, batchEnrollmentCounts, attendanceRecords))

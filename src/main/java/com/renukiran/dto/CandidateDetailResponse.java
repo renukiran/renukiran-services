@@ -211,7 +211,7 @@ public class CandidateDetailResponse {
                             .courseName(batch.getCourse().getCourseName())
                             .build())
                     .trainer(batch.getTrainer() == null ? null : CandidateTrainerResponse.builder()
-                            .name(batch.getTrainer().getName())
+                            .name(batch.getTrainer().getFirstName()+" "+batch.getTrainer().getLastName())
                             .build())
                     .build();
         }

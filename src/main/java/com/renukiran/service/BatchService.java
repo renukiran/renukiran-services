@@ -5,13 +5,13 @@ import com.renukiran.dto.BatchResponse;
 import com.renukiran.entity.Batch;
 
 
+import com.renukiran.entity.Users;
 import com.renukiran.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 import com.renukiran.entity.Course;
-import com.renukiran.entity.Trainer;
 import com.renukiran.exception.BusinessValidationException;
 import com.renukiran.exception.DuplicateResourceException;
 import com.renukiran.exception.ResourceNotFoundException;
@@ -26,7 +26,7 @@ public class BatchService {
 
     private final BatchRepository batchRepository;
     private final CourseRepository courseRepository;
-    private final TrainerRepository trainerRepository;
+    private final SignUpRepository userRepository;
     private final ApplicationFormRepository applicationFormRepository;
 
 /*
@@ -109,7 +109,7 @@ public class BatchService {
         Course course = courseRepository.findById(request.getCourseId())
                .orElseThrow(() -> new ResourceNotFoundException("Course not found", "COURSE_NOT_FOUND"));
 
-        Trainer trainer = trainerRepository.findById(request.getTrainerId())
+        Users trainer = userRepository.findById(request.getTrainerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found", "TRAINER_NOT_FOUND"));
 
         Batch batch = new Batch();
@@ -141,7 +141,7 @@ public class BatchService {
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found","COURSE_NOT_FOUND"));
 
-        Trainer trainer = trainerRepository.findById(request.getTrainerId())
+        Users trainer = userRepository.findById(request.getTrainerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found","TRAINER_NOT_FOUND"));
 
         mapToEntity(batch, request, course, trainer);
@@ -160,7 +160,7 @@ public class BatchService {
 
     // 🔁 MAPPERS
 
-    private void mapToEntity(Batch batch, BatchRequest req, Course course, Trainer trainer) {
+    private void mapToEntity(Batch batch, BatchRequest req, Course course, Users trainer) {
         batch.setBatchName(req.getBatchName());
         batch.setTiming(req.getTiming());
         batch.setStartDate(req.getStartDate());
@@ -177,8 +177,8 @@ public class BatchService {
         response.setTiming(batch.getTiming());
         response.setCourseId(batch.getCourse().getCourseId());
         response.setCourseName(batch.getCourse().getCourseName());
-        response.setTrainerId(batch.getTrainer().getTrainerId());
-        response.setTrainerName(batch.getTrainer().getName());
+        response.setTrainerId(batch.getTrainer().getId());
+        response.setTrainerName(batch.getTrainer().getFirstName()+" "+batch.getTrainer().getLastName());
         response.setCapacity(batch.getCapacity());
         response.setEndDate(batch.getEndDate());
         response.setStartDate(batch.getStartDate());
