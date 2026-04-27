@@ -1,7 +1,7 @@
 package com.renukiran.controllers;
 
-import com.renukiran.entity.Trainer;
-import com.renukiran.repository.TrainerRepository;
+import com.renukiran.dto.UserManagementResponse;
+import com.renukiran.service.UserManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TrainerController {
 
-    private final TrainerRepository trainerRepository;
+    private final UserManagementService userManagementService;
 
     @GetMapping
-    public ResponseEntity<List<Trainer>> getAllTrainers() {
-        return ResponseEntity.ok(trainerRepository.findAll());
+    public ResponseEntity<List<UserManagementResponse>> getAllTrainers() {
+        return ResponseEntity.ok(userManagementService.getTrainers());
     }
 }

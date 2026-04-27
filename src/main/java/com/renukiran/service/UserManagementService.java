@@ -42,6 +42,21 @@ public class UserManagementService {
                 }).collect(Collectors.toList());
     }
 
+    public List<UserManagementResponse> getTrainers() {
+        return signUpRepository.findAll().stream().filter( user -> Objects.nonNull(user.getUserType()) && user.getUserType().equalsIgnoreCase(RoleType.TRAINER.name()))
+                .map(user -> {
+                    UserManagementResponse res = new UserManagementResponse();
+                    res.setUserId(String.valueOf(user.getId()));
+                    res.setName(user.getUsername());
+                    res.setEmail(user.getEmail());
+                    res.setStatus(user.isActive() ? "ACTIVE" : "INACTIVE");
+                    res.setRole(user.getUserType());
+                   // res.setRole(Objects.nonNull(user.getRole()) ? user.getRole().getName().name() : null);
+                    // res.setDeleted(user.getDeleted());
+                    return res;
+                }).collect(Collectors.toList());
+    }
+
     public UserResponse createUser(UserRequest dto) {
 
         if (signUpRepository.existsByEmail(dto.getEmail())) {
