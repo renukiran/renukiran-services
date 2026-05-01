@@ -25,6 +25,7 @@ public class CandidateResponse {
     private LocalDate createdDate;
     private String status;
     private String courseName;
+    private Integer attendancePercentage;
 
     public static CandidateResponse from(ApplicationForm af) {
         Admission highestAdmission = af.getAdmissions() == null
@@ -47,6 +48,32 @@ public class CandidateResponse {
                 .createdDate(af.getCreatedDate())
                 .status(resolveStatus(highestAdmission))
                 .courseName(resolveCourseName(af, highestAdmission))
+                .attendancePercentage(null)
+                .build();
+    }
+
+    public static CandidateResponse from(ApplicationForm af, Integer attendancePercentage) {
+        Admission highestAdmission = af.getAdmissions() == null
+                ? null
+                : af.getAdmissions().stream()
+                        .filter(admission -> admission != null && admission.getStatus() != null)
+                        .max(Comparator.comparingInt(admission -> admission.getStatus().ordinal()))
+                        .orElse(null);
+
+        return CandidateResponse.builder()
+                .candidateId(af.getId())
+                .name(af.getFullName())
+                .guardianName(af.getFatherOrHusbandName())
+                .qualification(af.getEducationLevel() != null ? af.getEducationLevel().name() : null)
+                .occupation(af.getPrimarySourceOfIncome())
+                .mobile(af.getMobileNumber())
+                .address(af.getFullAddress())
+                .category(af.getCasteCategory() != null ? af.getCasteCategory().name() : null)
+                .skills(af.getPreviousSkillTraining())
+                .createdDate(af.getCreatedDate())
+                .status(resolveStatus(highestAdmission))
+                .courseName(resolveCourseName(af, highestAdmission))
+                .attendancePercentage(attendancePercentage)
                 .build();
     }
 

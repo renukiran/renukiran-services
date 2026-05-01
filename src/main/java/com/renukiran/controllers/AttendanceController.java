@@ -3,6 +3,7 @@ package com.renukiran.controllers;
 import com.renukiran.dto.AttendancePageResponse;
 import com.renukiran.dto.AttendanceSaveRequest;
 import com.renukiran.dto.AttendanceSaveResponse;
+import com.renukiran.dto.AttendanceForBatchResponse;
 import com.renukiran.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,17 @@ public class AttendanceController {
             @PathVariable Long batchId,
             @RequestParam(required = false) LocalDate attendanceDate) {
         return ResponseEntity.ok(attendanceService.getAttendancePage(batchId, attendanceDate));
+    }
+
+    /**
+     * Returns attendance across the whole batch duration (list of days + per-candidate day statuses).
+     * Optional candidateId filters to a single candidate.
+     */
+    @GetMapping("/summary")
+    public ResponseEntity<AttendanceForBatchResponse> getAttendanceForBatch(
+            @PathVariable Long batchId,
+            @RequestParam(required = false) Long candidateId) {
+        return ResponseEntity.ok(attendanceService.getAttendanceForBatch(batchId, candidateId));
     }
 
     @PostMapping

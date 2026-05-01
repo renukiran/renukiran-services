@@ -5,6 +5,9 @@ import com.renukiran.dto.AttendanceEntryRequest;
 import com.renukiran.dto.AttendancePageResponse;
 import com.renukiran.dto.AttendanceSaveRequest;
 import com.renukiran.dto.AttendanceSaveResponse;
+import com.renukiran.dto.AttendanceForBatchResponse;
+import com.renukiran.dto.CandidateAttendanceForBatchResponse;
+import com.renukiran.dto.DayStatusDto;
 import com.renukiran.entity.Admission;
 import com.renukiran.entity.ApplicationForm;
 import com.renukiran.entity.Batch;
@@ -56,23 +59,18 @@ public class AttendanceService {
         }
 
         List<AttendanceCandidateRowResponse> candidates = new ArrayList<>();
-        int rowNumber = 1;
 
         for (Admission admission : batchAdmissions) {
             ApplicationForm candidate = admission.getCandidate();
             CandidateAttendanceStatus todayStatus = todayStatusByCandidateId.get(candidate.getId());
             int attendancePercentage = calculateAttendancePercentage(candidate.getId(), batchAttendance);
-            int streakDays = calculateStreak(candidate.getId(), effectiveAttendanceDate, batchAttendance);
 
             candidates.add(AttendanceCandidateRowResponse.builder()
                     .candidateId(candidate.getId())
-                    .rowNumber(rowNumber++)
                     .candidateName(candidate.getFullName())
                     .mobileNumber(candidate.getMobileNumber())
                     .attendancePercentage(attendancePercentage)
                     .todayStatus(todayStatus)
-                    .streakDays(streakDays)
-                    .alertLabel(resolveAlertLabel(attendancePercentage))
                     .build());
         }
 
@@ -81,13 +79,80 @@ public class AttendanceService {
                 .batchName(batch.getBatchName())
                 .courseName(batch.getCourse().getCourseName())
                 .attendanceDate(effectiveAttendanceDate)
-                .previousDate(effectiveAttendanceDate.isAfter(batch.getStartDate()) ? effectiveAttendanceDate.minusDays(1) : null)
-                .nextDate(effectiveAttendanceDate.isBefore(batch.getEndDate()) ? effectiveAttendanceDate.plusDays(1) : null)
-                .classNumber(getClassNumber(batch.getStartDate(), effectiveAttendanceDate))
                 .totalClasses(getTotalClasses(batch.getStartDate(), batch.getEndDate()))
                 .markedCount(markedCount)
                 .enrolledCount(batchAdmissions.size())
                 .candidates(candidates)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceForBatchResponse getAttendanceForBatch(Long batchId, Long candidateId) {
+        Batch batch = getBatch(batchId);
+
+        // build list of dates between start and end inclusive
+        List<LocalDate> days = new ArrayList<>();
+        LocalDate cursor = batch.getStartDate();
+        while (!cursor.isAfter(batch.getEndDate())) {
+            days.add(cursor);
+            cursor = cursor.plusDays(1);
+        }
+
+        // admissions: if candidateId provided, filter
+        List<Admission> batchAdmissions = getBatchAdmissions(batchId);
+        List<Admission> relevantAdmissions = new ArrayList<>();
+        for (Admission admission : batchAdmissions) {
+            if (candidateId == null || (admission.getCandidate() != null && candidateId.equals(admission.getCandidate().getId()))) {
+                relevantAdmissions.add(admission);
+            }
+        }
+
+        // attendance records for batch
+        List<CandidateAttendance> batchAttendance = getBatchAttendance(batchId);
+
+        // map candidateId -> date -> status
+        Map<Long, Map<LocalDate, CandidateAttendanceStatus>> statusMap = new HashMap<>();
+        for (CandidateAttendance attendance : batchAttendance) {
+            if (attendance.getCandidate() == null) continue;
+            Long cid = attendance.getCandidate().getId();
+            if (candidateId != null && !candidateId.equals(cid)) continue;
+            statusMap.computeIfAbsent(cid, k -> new HashMap<>())
+                    .put(attendance.getAttendanceDate(), attendance.getAttendanceStatus());
+        }
+
+        List<CandidateAttendanceForBatchResponse> candidateResponses = new ArrayList<>();
+        for (Admission admission : relevantAdmissions) {
+            ApplicationForm candidate = admission.getCandidate();
+            Long cid = candidate.getId();
+            Map<LocalDate, CandidateAttendanceStatus> byDate = statusMap.getOrDefault(cid, Map.of());
+
+            List<DayStatusDto> dayStatuses = new ArrayList<>();
+            int presentCount = 0;
+            for (LocalDate d : days) {
+                CandidateAttendanceStatus s = byDate.get(d);
+                String status = s == null ? "NOT_MARKED" : s.name();
+                if (s == CandidateAttendanceStatus.PRESENT) presentCount++;
+                dayStatuses.add(new DayStatusDto(d, status));
+            }
+
+            int totalDays = days.size();
+            int percentage = totalDays == 0 ? 0 : (int) Math.round((presentCount * 100.0) / totalDays);
+
+            candidateResponses.add(CandidateAttendanceForBatchResponse.builder()
+                    .candidateId(cid)
+                    .candidateName(candidate.getFullName())
+                    .attendancePercentage(percentage)
+                    .dayStatuses(dayStatuses)
+                    .build());
+        }
+
+        return AttendanceForBatchResponse.builder()
+                .batchId(batch.getId())
+                .batchName(batch.getBatchName())
+                .courseName(batch.getCourse().getCourseName())
+                .startDate(batch.getStartDate())
+                .endDate(batch.getEndDate())
+                .candidateAttendances(candidateResponses)
                 .build();
     }
 
@@ -216,15 +281,7 @@ public class AttendanceService {
         return streak;
     }
 
-    private String resolveAlertLabel(int attendancePercentage) {
-        if (attendancePercentage > 0 && attendancePercentage < 70) {
-            return "Below 70%";
-        }
-        if (attendancePercentage >= 70 && attendancePercentage < 80) {
-            return "At risk";
-        }
-        return null;
-    }
+
 
     private int getClassNumber(LocalDate startDate, LocalDate attendanceDate) {
         return Math.max(1, (int) ChronoUnit.DAYS.between(startDate, attendanceDate) + 1);

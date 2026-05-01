@@ -1,19 +1,19 @@
 package com.renukiran.dto;
 
-import com.renukiran.enums.CandidateAttendanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceCandidateRowResponse {
+public class CandidateAttendanceForBatchResponse {
     private Long candidateId;
     private String candidateName;
-    private String mobileNumber;
     private Integer attendancePercentage;
-    private CandidateAttendanceStatus todayStatus;
+    private List<DayStatusDto> dayStatuses; // in same order as days in AttendanceForBatchResponse
 }

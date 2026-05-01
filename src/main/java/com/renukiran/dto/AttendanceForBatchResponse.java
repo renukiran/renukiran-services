@@ -12,13 +12,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendancePageResponse {
+public class AttendanceForBatchResponse {
     private Long batchId;
     private String batchName;
     private String courseName;
-    private LocalDate attendanceDate;
-    private Integer totalClasses;
-    private Integer markedCount;
-    private Integer enrolledCount;
-    private List<AttendanceCandidateRowResponse> candidates;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private List<CandidateAttendanceForBatchResponse> candidateAttendances;
 }
