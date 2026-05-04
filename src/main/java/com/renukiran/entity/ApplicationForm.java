@@ -12,14 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.time.LocalDate;
 
 @Entity
@@ -161,6 +158,8 @@ public class ApplicationForm {
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Admission> admissions = new ArrayList<>();
+
+
 
     @PrePersist
     void prePersist() {

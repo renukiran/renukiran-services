@@ -173,12 +173,14 @@ public class CandidateDetailResponse {
         private String admissionNumber;
         private String status;
         private CandidateBatchResponse batch;
+        private Integer attendancePercentage; // added
 
         static CandidateAdmissionResponse from(Admission admission) {
             return CandidateAdmissionResponse.builder()
                     .admissionNumber(admission.getAdmissionNumber())
                     .status(enumName(admission.getStatus()))
                     .batch(CandidateBatchResponse.from(admission.getBatch()))
+                    .attendancePercentage(admission.getAttendancePercentage())
                     .build();
         }
     }

@@ -1,6 +1,5 @@
 package com.renukiran.dto;
 
-import com.renukiran.entity.ApplicationForm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,4 +26,5 @@ public class BatchResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private List<Long> candidates;
+    private List<CandidateResponse> candidatesWithAttendance;
 }

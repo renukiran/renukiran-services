@@ -9,6 +9,8 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -25,7 +27,8 @@ public class CandidateResponse {
     private LocalDate createdDate;
     private String status;
     private String courseName;
-    private Integer attendancePercentage;
+    private Integer attendancePercentage; // overall (max across admissions)
+    private List<AdmissionAttendance> admissions; // per-admission attendance summaries
 
     public static CandidateResponse from(ApplicationForm af) {
         Admission highestAdmission = af.getAdmissions() == null
@@ -34,6 +37,27 @@ public class CandidateResponse {
                         .filter(admission -> admission != null && admission.getStatus() != null)
                         .max(Comparator.comparingInt(admission -> admission.getStatus().ordinal()))
                         .orElse(null);
+
+        List<AdmissionAttendance> admissionAttendances = (af.getAdmissions() == null) ? List.of() : af.getAdmissions().stream()
+                .filter(admission -> admission != null)
+                .map(admission -> AdmissionAttendance.builder()
+                        .admissionNumber(admission.getAdmissionNumber())
+                        .status(admission.getStatus() != null ? admission.getStatus().name() : null)
+                        .batchId(admission.getBatch() != null ? admission.getBatch().getId() : null)
+                        .batchName(admission.getBatch() != null ? admission.getBatch().getBatchName() : null)
+                        .attendancePercentage(admission.getAttendancePercentage())
+                        .build())
+                .collect(Collectors.toList());
+
+        // determine overall max attendance across admissions
+        Integer overall = null;
+        for (AdmissionAttendance aa : admissionAttendances) {
+            if (aa == null) continue;
+            Integer p = aa.getAttendancePercentage();
+            if (p != null) {
+                if (overall == null || p > overall) overall = p;
+            }
+        }
 
         return CandidateResponse.builder()
                 .candidateId(af.getId())
@@ -48,7 +72,8 @@ public class CandidateResponse {
                 .createdDate(af.getCreatedDate())
                 .status(resolveStatus(highestAdmission))
                 .courseName(resolveCourseName(af, highestAdmission))
-                .attendancePercentage(null)
+                .attendancePercentage(overall)
+                .admissions(admissionAttendances)
                 .build();
     }
 
@@ -59,6 +84,17 @@ public class CandidateResponse {
                         .filter(admission -> admission != null && admission.getStatus() != null)
                         .max(Comparator.comparingInt(admission -> admission.getStatus().ordinal()))
                         .orElse(null);
+
+        List<AdmissionAttendance> admissionAttendances = (af.getAdmissions() == null) ? List.of() : af.getAdmissions().stream()
+                .filter(admission -> admission != null)
+                .map(admission -> AdmissionAttendance.builder()
+                        .admissionNumber(admission.getAdmissionNumber())
+                        .status(admission.getStatus() != null ? admission.getStatus().name() : null)
+                        .batchId(admission.getBatch() != null ? admission.getBatch().getId() : null)
+                        .batchName(admission.getBatch() != null ? admission.getBatch().getBatchName() : null)
+                        .attendancePercentage(admission.getAttendancePercentage())
+                        .build())
+                .collect(Collectors.toList());
 
         return CandidateResponse.builder()
                 .candidateId(af.getId())
@@ -74,6 +110,7 @@ public class CandidateResponse {
                 .status(resolveStatus(highestAdmission))
                 .courseName(resolveCourseName(af, highestAdmission))
                 .attendancePercentage(attendancePercentage)
+                .admissions(admissionAttendances)
                 .build();
     }
 
@@ -100,5 +137,15 @@ public class CandidateResponse {
             case HOME_BASED_PRODUCTION -> "Home-Based Production";
             case OTHER -> "Other";
         };
+    }
+
+    @Getter
+    @Builder
+    public static class AdmissionAttendance {
+        private String admissionNumber;
+        private String status;
+        private Long batchId;
+        private String batchName;
+        private Integer attendancePercentage;
     }
 }

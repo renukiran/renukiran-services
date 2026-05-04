@@ -35,4 +35,7 @@ public class Admission {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Batch batch;
 
+    @Transient
+    private Integer attendancePercentage;
+
 }

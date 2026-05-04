@@ -19,6 +19,12 @@ import com.renukiran.repository.BatchRepository;
 import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,7 @@ public class BatchService {
     private final CourseRepository courseRepository;
     private final SignUpRepository userRepository;
     private final ApplicationFormRepository applicationFormRepository;
+    private final com.renukiran.repository.CandidateAttendanceRepository candidateAttendanceRepository;
 
 /*
 
@@ -182,7 +189,72 @@ public class BatchService {
         response.setCapacity(batch.getCapacity());
         response.setEndDate(batch.getEndDate());
         response.setStartDate(batch.getStartDate());
-        response.setCandidates(applicationFormRepository.findApplicationFormIdsByBatchId(batch.getId()));
+        List<Long> candidateIds = applicationFormRepository.findApplicationFormIdsByBatchId(batch.getId());
+        response.setCandidates(candidateIds);
+
+        // build candidatesWithAttendance using candidate ids and attendance repository
+        List<com.renukiran.dto.CandidateResponse> candidatesWithAttendance = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        LocalDate batchStart = batch.getStartDate();
+        LocalDate batchEnd = batch.getEndDate();
+        LocalDate effectiveEnd = (batchEnd == null) ? null : (batchEnd.isAfter(today) ? today : batchEnd);
+        int totalDays = 0;
+        if (batchStart != null && effectiveEnd != null && !effectiveEnd.isBefore(batchStart)) {
+            totalDays = (int) ChronoUnit.DAYS.between(batchStart, effectiveEnd) + 1;
+        }
+
+        for (Long cid : candidateIds) {
+            Optional<com.renukiran.entity.ApplicationForm> maybeAf = applicationFormRepository.findById(cid);
+            if (maybeAf.isEmpty()) continue;
+            com.renukiran.entity.ApplicationForm af = maybeAf.get();
+
+            // --- New: compute per-admission attendancePercentage for this application form ---
+            LocalDate now = LocalDate.now();
+            if (af.getAdmissions() != null) {
+                for (com.renukiran.entity.Admission adm : af.getAdmissions()) {
+                    if (adm == null || adm.getBatch() == null) continue;
+                    try {
+                        Long admBatchId = adm.getBatch().getId();
+                        if (admBatchId == null) {
+                            adm.setAttendancePercentage(null);
+                            continue;
+                        }
+
+                        LocalDate admStart = adm.getBatch().getStartDate();
+                        LocalDate admEnd = adm.getBatch().getEndDate();
+                        LocalDate admEffectiveEnd = (admEnd == null) ? null : (admEnd.isAfter(now) ? now : admEnd);
+
+                        int admTotalDays = 0;
+                        if (admStart != null && admEffectiveEnd != null && !admEffectiveEnd.isBefore(admStart)) {
+                            admTotalDays = (int) ChronoUnit.DAYS.between(admStart, admEffectiveEnd) + 1;
+                        }
+
+                        Integer admPercentage = null;
+                        if (admTotalDays > 0) {
+                            long admPresentCount = candidateAttendanceRepository
+                                    .countByBatch_IdAndCandidate_IdAndAttendanceStatus(admBatchId, af.getId(), com.renukiran.enums.CandidateAttendanceStatus.PRESENT);
+                            admPercentage = (int) Math.round((admPresentCount * 100.0) / admTotalDays);
+                        }
+
+                        adm.setAttendancePercentage(admPercentage);
+                    } catch (Exception e) {
+                        // if any error, set null and continue
+                        try { adm.setAttendancePercentage(null); } catch (Exception ignore) {}
+                    }
+                }
+            }
+            // --- end per-admission computation ---
+
+            Integer percentage = null;
+            if (totalDays > 0) {
+                long presentCount = candidateAttendanceRepository
+                        .countByBatch_IdAndCandidate_IdAndAttendanceStatus(batch.getId(), af.getId(), com.renukiran.enums.CandidateAttendanceStatus.PRESENT);
+                percentage = (int) Math.round((presentCount * 100.0) / totalDays);
+            }
+            candidatesWithAttendance.add(com.renukiran.dto.CandidateResponse.from(af, percentage));
+        }
+
+        response.setCandidatesWithAttendance(candidatesWithAttendance);
        return response;
     }
 }
