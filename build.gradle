@@ -24,7 +24,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
     // Use PostgreSQL driver at runtime
-    runtimeOnly 'org.postgresql:postgresql:42.6.0'
+    runtimeOnly 'org.postgresql:postgresql:42.7.11'
 	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     compileOnly 'org.projectlombok:lombok'
