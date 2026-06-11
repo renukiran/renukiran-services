@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 // allow the production frontend host (exact) and any localhost origin on any port
                 .allowedOriginPatterns(
-                        "https://renukiran-ui.onrender.com",
+                        "https://renukiran-ui-production.up.railway.app",
                         "http://localhost:*",
                         "https://localhost:*",
                         "http://127.0.0.1:*",
